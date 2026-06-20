@@ -1,0 +1,408 @@
+/* ============================================================
+   custom.css — Treddy Design System
+   Paleta extraída de treddy-frontend (Next.js / Tailwind)
+   Adaptada a Bootstrap 5 + Django Templates
+   ============================================================ */
+
+/* ── Google Fonts: Inter (tipografía corporativa) ────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ── Variables de marca ──────────────────────────────────────── */
+:root {
+    --treddy-bg:        #0A0F2C;
+    --treddy-panel:     #0F173A;
+    --treddy-card:      #1a214f;
+    --treddy-border:    #2a3055;
+    --treddy-cyan:      #00E6F6;
+    --treddy-cyan-dim:  rgba(0, 230, 246, 0.20);
+    --treddy-text:      #e2e8f0;
+    --treddy-muted:     #94a3b8;
+    --treddy-grad:      linear-gradient(135deg, #06b6d4, #3b82f6);
+    --treddy-radius:    0.85rem;
+    --treddy-shadow:    0 0 24px rgba(0, 230, 246, 0.08);
+
+    /* Sobrescribir tokens de Bootstrap */
+    --bs-body-bg:       var(--treddy-bg);
+    --bs-body-color:    var(--treddy-text);
+    --bs-primary:       #06b6d4;
+    --bs-primary-rgb:   6, 182, 212;
+    --bs-border-color:  var(--treddy-border);
+    --bs-card-bg:       var(--treddy-card);
+    --bs-font-sans-serif: 'Inter', Arial, Helvetica, sans-serif;
+}
+
+/* ── Base global ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    background-color: var(--treddy-bg) !important;
+    color: var(--treddy-text) !important;
+    font-family: var(--bs-font-sans-serif) !important;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────── */
+.sidebar {
+    background: var(--treddy-panel) !important;
+    border-right: 1px solid var(--treddy-border) !important;
+    box-shadow: var(--treddy-shadow) !important;
+}
+
+.sidebar-brand {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: var(--treddy-grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    padding: 1.2rem 1rem;
+    display: block;
+    text-align: center;
+}
+
+.sidebar .nav-link {
+    color: var(--treddy-muted) !important;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.6rem;
+    margin: 0.15rem 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none !important;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    color: var(--treddy-cyan) !important;
+    background: var(--treddy-cyan-dim) !important;
+    border: 1px solid rgba(0, 230, 246, 0.2) !important;
+}
+
+.sidebar .nav-link.text-danger {
+    color: #ef4444 !important;
+}
+.sidebar .nav-link.text-danger:hover {
+    background: rgba(239, 68, 68, 0.15) !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+/* ── Topbar (header) ──────────────────────────────────────────── */
+.topbar {
+    background: var(--treddy-panel);
+    border-bottom: 1px solid var(--treddy-border);
+    padding: 0.8rem 1.5rem;
+}
+.topbar h1 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--treddy-text);
+}
+.topbar .badge-role {
+    font-size: 0.7rem;
+    background: var(--treddy-cyan-dim);
+    color: var(--treddy-cyan);
+    border: 1px solid rgba(0, 230, 246, 0.3);
+    padding: 0.25rem 0.7rem;
+    border-radius: 50px;
+    font-weight: 600;
+}
+
+/* ── Cards ─────────────────────────────────────────────────────  */
+.card {
+    background: var(--treddy-card) !important;
+    border: 1px solid var(--treddy-border) !important;
+    border-radius: var(--treddy-radius) !important;
+    color: var(--treddy-text) !important;
+    box-shadow: var(--treddy-shadow) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+.card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 0 32px rgba(0, 230, 246, 0.14) !important;
+}
+.card-header {
+    background: var(--treddy-panel) !important;
+    border-bottom: 1px solid var(--treddy-border) !important;
+    color: var(--treddy-text) !important;
+}
+.card-footer {
+    background: var(--treddy-panel) !important;
+    border-top: 1px solid var(--treddy-border) !important;
+}
+.text-muted { color: var(--treddy-muted) !important; }
+
+/* ── Formularios ─────────────────────────────────────────────── */
+.form-control,
+.form-select {
+    background: var(--treddy-panel) !important;
+    border: 1px solid var(--treddy-border) !important;
+    color: var(--treddy-text) !important;
+    border-radius: 0.6rem !important;
+}
+.form-control::placeholder { color: var(--treddy-muted) !important; }
+.form-control:focus,
+.form-select:focus {
+    background: var(--treddy-panel) !important;
+    border-color: var(--treddy-cyan) !important;
+    box-shadow: 0 0 0 3px rgba(0, 230, 246, 0.15) !important;
+    color: var(--treddy-text) !important;
+}
+.form-label { color: var(--treddy-muted); font-weight: 500; font-size: 0.85rem; }
+.input-group-text {
+    background: var(--treddy-card) !important;
+    border: 1px solid var(--treddy-border) !important;
+    color: var(--treddy-muted) !important;
+}
+/* Fix para input-group con el form-control border-radius !important */
+.input-group > .form-control:not(:first-child),
+.input-group > .form-select:not(:first-child) {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+}
+.input-group > .input-group-text:not(:last-child) {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+
+/* ── Botones ──────────────────────────────────────────────────── */
+.btn-primary {
+    background: var(--treddy-grad) !important;
+    border: none !important;
+    color: #000 !important;
+    font-weight: 600 !important;
+    border-radius: 50px !important;
+    padding: 0.55rem 1.5rem !important;
+    transition: opacity 0.2s, transform 0.15s !important;
+}
+.btn-primary:hover { opacity: 0.88 !important; transform: scale(1.02) !important; }
+
+.btn-outline-primary {
+    border-color: var(--treddy-cyan) !important;
+    color: var(--treddy-cyan) !important;
+    border-radius: 50px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s !important;
+}
+.btn-outline-primary:hover {
+    background: var(--treddy-cyan-dim) !important;
+    color: var(--treddy-cyan) !important;
+}
+
+.btn-outline-danger {
+    border-radius: 50px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s !important;
+}
+
+.btn-light {
+    background: var(--treddy-card) !important;
+    border: 1px solid var(--treddy-border) !important;
+    color: var(--treddy-muted) !important;
+    border-radius: 50px !important;
+}
+
+.btn-danger {
+    border-radius: 50px !important;
+    font-weight: 600 !important;
+}
+
+/* ── Alertas ──────────────────────────────────────────────────── */
+.alert-danger {
+    background: rgba(239, 68, 68, 0.12) !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+    color: #fca5a5 !important;
+    border-radius: 0.6rem !important;
+}
+.alert-success {
+    background: rgba(34, 197, 94, 0.12) !important;
+    border-color: rgba(34, 197, 94, 0.3) !important;
+    color: #86efac !important;
+    border-radius: 0.6rem !important;
+}
+.alert-info {
+    background: var(--treddy-cyan-dim) !important;
+    border-color: rgba(0, 230, 246, 0.3) !important;
+    color: var(--treddy-cyan) !important;
+    border-radius: 0.6rem !important;
+}
+
+/* ── Badges ──────────────────────────────────────────────────── */
+.bg-success-subtle { background: rgba(34, 197, 94, 0.15) !important; }
+.bg-danger-subtle  { background: rgba(239, 68, 68, 0.15) !important; }
+.text-success      { color: #86efac !important; }
+.text-danger       { color: #fca5a5 !important; }
+.text-primary      { color: var(--treddy-cyan) !important; }
+.fw-bold.fs-5      { color: var(--treddy-cyan) !important; }
+
+/* ── Login & Registro page ───────────────────────────────────── */
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+        radial-gradient(ellipse at 20% 40%, rgba(0,230,246,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 70%, rgba(59,130,246,0.07) 0%, transparent 60%),
+        var(--treddy-bg);
+}
+.login-card {
+    width: 100%;
+    max-width: 430px;
+    background: var(--treddy-panel) !important;
+    border: 1px solid var(--treddy-border) !important;
+    border-radius: 1.25rem !important;
+    box-shadow: 0 0 60px rgba(0, 230, 246, 0.1) !important;
+    padding: 2.5rem !important;
+}
+.login-brand {
+    font-size: 2rem;
+    font-weight: 800;
+    background: var(--treddy-grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: block;
+    text-align: center;
+    margin-bottom: 0.25rem;
+}
+.login-subtitle {
+    color: var(--treddy-muted);
+    font-size: 0.9rem;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.login-divider {
+    border-color: var(--treddy-border);
+    margin: 1.5rem 0;
+}
+.login-link { color: var(--treddy-cyan); text-decoration: none; }
+.login-link:hover { text-decoration: underline; }
+
+/* ── Animated Canvas Background ─────────────────────────────── */
+#particles-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* ── Dashboard Stats Cards ─────────────────────────────────────  */
+.stat-card {
+    background: var(--treddy-card);
+    border: 1px solid var(--treddy-border);
+    border-radius: var(--treddy-radius);
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.2s;
+}
+.stat-card:hover {
+    border-color: rgba(0,230,246,0.4);
+    box-shadow: 0 0 24px rgba(0,230,246,0.1);
+}
+.stat-card .stat-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: var(--treddy-grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.stat-card .stat-label {
+    color: var(--treddy-muted);
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--treddy-bg); }
+::-webkit-scrollbar-thumb {
+    background: var(--treddy-border);
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--treddy-cyan-dim); }
+
+/* ── Table ─────────────────────────────────────────────────── */
+.table {
+    color: var(--treddy-text) !important;
+}
+.table thead th {
+    background: var(--treddy-panel) !important;
+    border-color: var(--treddy-border) !important;
+    color: var(--treddy-muted) !important;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+.table tbody tr {
+    border-color: var(--treddy-border) !important;
+    transition: background 0.15s;
+}
+.table tbody tr:hover { background: var(--treddy-panel) !important; }
+
+/* ── Border utility ─────────────────────────────────────────── */
+.border-bottom { border-color: var(--treddy-border) !important; }
+
+/* ── NProgress (SPA Loader) ──────────────────────────────────── */
+#nprogress .bar {
+    background: var(--treddy-cyan) !important;
+    height: 3px !important;
+}
+#nprogress .peg {
+    box-shadow: 0 0 10px var(--treddy-cyan), 0 0 5px var(--treddy-cyan) !important;
+}
+
+/* ── SweetAlert2 (Dark Theme Treddy) ─────────────────────────── */
+.swal2-popup {
+    background: var(--treddy-panel) !important;
+    border: 1px solid var(--treddy-border) !important;
+    color: var(--treddy-text) !important;
+    border-radius: var(--treddy-radius) !important;
+    box-shadow: 0 0 40px rgba(0, 230, 246, 0.1) !important;
+}
+.swal2-title { color: var(--treddy-text) !important; font-family: 'Inter', sans-serif !important; }
+.swal2-html-container { color: var(--treddy-muted) !important; }
+.swal2-confirm {
+    background: var(--treddy-grad) !important;
+    border-radius: 50px !important;
+    color: #000 !important;
+    font-weight: 600 !important;
+    padding: 0.6rem 2rem !important;
+}
+.swal2-cancel {
+    background: transparent !important;
+    border: 1px solid var(--treddy-border) !important;
+    color: var(--treddy-muted) !important;
+    border-radius: 50px !important;
+    padding: 0.6rem 2rem !important;
+}
+.swal2-cancel:hover { background: var(--treddy-card) !important; }
+
+/* ── UI enhancements ────────────────────────────────────────── */
+.treddy-card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.treddy-card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(0, 230, 246, 0.12) !important;
+    border-color: rgba(0, 230, 246, 0.4) !important;
+}
+.img-preview-container {
+    background: var(--treddy-card);
+    border: 2px dashed var(--treddy-border);
+    border-radius: var(--treddy-radius);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.2s ease;
+}
+.img-preview-container:hover {
+    border-color: var(--treddy-cyan);
+    background: rgba(0, 230, 246, 0.03);
+}
