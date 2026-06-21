@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — Admin{% endblock %}
+
+{% block content %}
+<!-- ── Banner de Bienvenida ─────────────────────────────────── -->
+<div class="mb-5" style="
+    background: linear-gradient(135deg, rgba(0,230,246,0.08) 0%, rgba(59,130,246,0.08) 100%);
+    border: 1px solid var(--treddy-border);
+    border-radius: var(--treddy-radius);
+    padding: 2rem 2.5rem;">
+    <h2 class="fw-bold mb-1" style="font-size:1.8rem;">
+        ⚡ Panel de Control
+    </h2>
+    <p style="color:var(--treddy-muted);margin-bottom:0;">
+        Tienes control total del sistema. Gestiona usuarios, productos e inventario.
+    </p>
+</div>
+
+<!-- ── KPI Stats ─────────────────────────────────────────────── -->
+<div class="row g-4 mb-5">
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div style="font-size:1.8rem;margin-bottom:0.4rem;">👥</div>
+            <div class="stat-value">{{ total_usuarios|default:"—" }}</div>
+            <div class="stat-label">Usuarios Totales</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div style="font-size:1.8rem;margin-bottom:0.4rem;">📦</div>
+            <div class="stat-value">{{ total_productos|default:"—" }}</div>
+            <div class="stat-label">Productos Activos</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div style="font-size:1.8rem;margin-bottom:0.4rem;">⚠️</div>
+            <div class="stat-value" style="background:linear-gradient(135deg,#f97316,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ productos_bajo_stock|default:"—" }}</div>
+            <div class="stat-label">Bajo en Stock</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div style="font-size:1.8rem;margin-bottom:0.4rem;">✅</div>
+            <div class="stat-value" style="background:linear-gradient(135deg,#22c55e,#16a34a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">{{ usuarios_activos|default:"—" }}</div>
+            <div class="stat-label">Usuarios Activos</div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Accesos rápidos ────────────────────────────────────────── -->
+<h5 class="fw-semibold mb-3" style="color:var(--treddy-muted);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.08em;">
+    Acciones Rápidas
+</h5>
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card p-3" style="cursor:pointer;" onclick="loadSPA('{% url 'productos_list' %}')">
+            <div class="d-flex align-items-center gap-3">
+                <div style="font-size:2rem;">📦</div>
+                <div>
+                    <div class="fw-bold">Gestionar Productos</div>
+                    <div style="color:var(--treddy-muted);font-size:0.82rem;">Crear, editar y eliminar inventario</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-3" style="cursor:pointer;" onclick="loadSPA('{% url 'registro' %}')">
+            <div class="d-flex align-items-center gap-3">
+                <div style="font-size:2rem;">👤</div>
+                <div>
+                    <div class="fw-bold">Registrar Usuario</div>
+                    <div style="color:var(--treddy-muted);font-size:0.82rem;">Añadir Vendedor o Cliente al sistema</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-3">
+            <div class="d-flex align-items-center gap-3">
+                <div style="font-size:2rem;">🔒</div>
+                <div>
+                    <div class="fw-bold">Seguridad Activa</div>
+                    <div style="color:var(--treddy-muted);font-size:0.82rem;">4 capas de seguridad habilitadas</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

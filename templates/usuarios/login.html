@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es-co">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treddy — Iniciar Sesión</title>
+    {% load static %}
+    {% load widget_tweaks %}
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+</head>
+<body>
+
+<!-- Canvas de partículas (idéntico al AnimatedBackground del frontend) -->
+<canvas id="particles-canvas"></canvas>
+
+<div class="login-page">
+    <div class="login-card">
+        <!-- Marca -->
+        <span class="login-brand">⚡ Treddy</span>
+        <p class="login-subtitle">Plataforma de Gestión Inteligente</p>
+
+        <!-- Flash messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-danger py-2 mb-3">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Form errors (Capa 1 y 2 de seguridad) -->
+        {% if form.errors %}
+            <div class="alert alert-danger py-2 mb-3">
+                Credenciales incorrectas o caracteres no permitidos.
+            </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'login' %}" novalidate>
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="form-label">Correo Electrónico</label>
+                {% render_field form.username class="form-control" placeholder="ejemplo@treddy.com" id="id_username" %}
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Contraseña</label>
+                {% render_field form.password class="form-control" placeholder="••••••••" id="id_password" %}
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
+                Iniciar Sesión
+            </button>
+        </form>
+
+        <hr class="login-divider">
+        <p class="text-center mb-0" style="color:var(--treddy-muted);font-size:0.88rem;">
+            ¿Nuevo en Treddy?
+            <a href="{% url 'registro' %}" class="login-link ms-1">Crear una cuenta</a>
+        </p>
+    </div>
+</div>
+
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script>
+(function() {
+    const canvas = document.getElementById('particles-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    resize();
+    window.addEventListener('resize', resize);
+    class P {
+        constructor() { this.x=Math.random()*canvas.width; this.y=Math.random()*canvas.height; this.vx=(Math.random()-.5)*.3; this.vy=(Math.random()-.5)*.3; this.r=Math.random()*2+1.5; }
+        update() { this.x+=this.vx; this.y+=this.vy; if(this.x<0||this.x>canvas.width)this.vx*=-1; if(this.y<0||this.y>canvas.height)this.vy*=-1; }
+        draw() { ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2); ctx.fillStyle='#00E6F6'; ctx.fill(); }
+    }
+    const N=80, pts=Array.from({length:N},()=>new P());
+    const go=()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); pts.forEach(p=>{p.update();p.draw();}); for(let i=0;i<N;i++) for(let j=i+1;j<N;j++){const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy); if(d<100){ctx.beginPath();ctx.strokeStyle=`rgba(0,230,246,${0.1*(1-d/100)})`;ctx.lineWidth=1;ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.stroke();}} requestAnimationFrame(go); };
+    go();
+})();
+</script>
+</body>
+</html>
