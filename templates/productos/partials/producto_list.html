@@ -1,0 +1,212 @@
+<!-- ── Cabecera ─────────────────────────────────────────────────── -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-0" style="color:var(--treddy-text);">Gestión de Productos</h2>
+        <p class="mb-0" style="color:var(--treddy-muted);font-size:0.85rem;">Inventario actualizado del sistema</p>
+    </div>
+    <button class="btn btn-primary px-4 spa-link" data-url="{% url 'producto_create' %}">
+        + Nuevo Producto
+    </button>
+</div>
+
+<!-- ── Barra de Búsqueda y Filtros ──────────────────────────────── -->
+<div class="card mb-4 p-2 border-0" style="background:var(--treddy-panel); box-shadow:none;">
+    <div class="card-body d-flex flex-column flex-md-row gap-3 align-items-center justify-content-between py-2 px-1">
+        <!-- Búsqueda -->
+        <div class="d-flex align-items-center px-3" style="max-width: 400px; width:100%; background:var(--treddy-panel); border:1px solid var(--treddy-border); border-radius:50px; overflow:hidden;">
+            <span style="color:var(--treddy-muted);">🔍</span>
+            <input type="text" id="searchInput" class="form-control bg-transparent" placeholder="Buscar por nombre o categoría..." style="border:none !important; box-shadow:none !important; color:var(--treddy-text);">
+        </div>
+        
+        <!-- Filtros rápidos -->
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            <button class="btn btn-sm filter-btn active" data-filter="all" style="background:var(--treddy-cyan-dim); color:var(--treddy-cyan); border:1px solid rgba(0,230,246,0.3); border-radius:50px;">Todos</button>
+            <button class="btn btn-sm filter-btn" data-filter="activo" style="background:rgba(34,197,94,0.1); color:#86efac; border:1px solid rgba(34,197,94,0.3); border-radius:50px;">Activos</button>
+            <button class="btn btn-sm filter-btn" data-filter="inactivo" style="background:rgba(239,68,68,0.1); color:#fca5a5; border:1px solid rgba(239,68,68,0.3); border-radius:50px;">Inactivos</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Grid de tarjetas ─────────────────────────────────────────── -->
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4" id="productsGrid">
+    {% for producto in productos %}
+    <div class="col product-item" data-name="{{ producto.nombre|lower }}" data-cat="{{ producto.categoria|lower }}" data-status="{{ producto.estado }}">
+        <div class="card h-100 treddy-card-hover overflow-hidden">
+            <!-- Imagen -->
+            {% if producto.imagen %}
+                <div style="height:250px; background:var(--treddy-bg); border-bottom:1px solid var(--treddy-border); overflow:hidden;">
+                    <img src="{{ producto.imagen.url }}"
+                         alt="{{ producto.nombre }}"
+                         style="width:100%; height:100%; object-fit:cover; transition: transform 0.3s ease;"
+                         onmouseover="this.style.transform='scale(1.08)'"
+                         onmouseout="this.style.transform='scale(1)'">
+                </div>
+            {% else %}
+                <div class="d-flex align-items-center justify-content-center"
+                     style="height:250px;background:var(--treddy-bg);border-bottom:1px solid var(--treddy-border);">
+                    <span style="font-size:3rem; opacity:0.5;">📦</span>
+                </div>
+            {% endif %}
+
+            <div class="card-body position-relative">
+                <!-- Badge de Estado FLOTANTE -->
+                <span class="badge position-absolute top-0 end-0 m-3 {% if producto.estado == 'activo' %}bg-success-subtle text-success{% else %}bg-danger-subtle text-danger{% endif %}"
+                      style="font-size:0.7rem;border-radius:50px;padding:0.3rem 0.7rem; backdrop-filter:blur(4px); border:1px solid currentColor;">
+                    {{ producto.estado|title }}
+                </span>
+
+                <h5 class="card-title fw-bold mb-1 pe-5" style="font-size:1.05rem;" title="{{ producto.nombre }}">
+                    {{ producto.nombre|truncatechars:25 }}
+                </h5>
+                <p style="color:var(--treddy-muted);font-size:0.8rem;margin-bottom:0.8rem;">
+                    📂 {{ producto.categoria|default:"Sin categoría" }}
+                </p>
+                
+                <div class="d-flex justify-content-between align-items-end mt-3">
+                    <div>
+                        <div style="color:var(--treddy-muted);font-size:0.7rem;text-transform:uppercase;">Precio</div>
+                        <div style="color:var(--treddy-cyan);font-size:1.3rem;font-weight:800;line-height:1;">
+                            ${{ producto.precio_base }}
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <div style="color:var(--treddy-muted);font-size:0.7rem;text-transform:uppercase;">Stock</div>
+                        <div style="color:var(--treddy-text);font-size:1.1rem;font-weight:600;line-height:1;">
+                            {{ producto.stock }} <span style="font-size:0.75rem;font-weight:400;color:var(--treddy-muted);">uds</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer p-2 d-flex gap-2 bg-transparent border-0">
+                <button class="btn btn-outline-primary btn-sm flex-fill spa-link" style="border-radius:0.5rem;"
+                        data-url="{% url 'producto_update' producto.pk %}">
+                    ✏️ Editar
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-sm flex-fill btn-delete" style="border-radius:0.5rem;"
+                        data-url="{% url 'producto_delete' producto.pk %}"
+                        data-name="{{ producto.nombre }}">
+                    🗑️ Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5" id="emptyState">
+        <div style="display:inline-block; padding:2rem; background:var(--treddy-panel); border:1px dashed var(--treddy-border); border-radius:1rem;">
+            <p style="font-size:3.5rem;margin-bottom:0.5rem;filter:drop-shadow(0 0 10px rgba(0,230,246,0.3));">📦</p>
+            <h4 class="fw-bold" style="color:var(--treddy-cyan);">Inventario Vacío</h4>
+            <p style="color:var(--treddy-muted);">No hay productos registrados en el sistema aún.</p>
+            <button class="btn btn-primary mt-2 spa-link" data-url="{% url 'producto_create' %}">
+                + Agregar primer producto
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Csrf token oculto para peticiones AJAX de borrado -->
+<input type="hidden" id="csrfToken" value="{{ csrf_token }}">
+
+<script>
+// Re-bind SPA links
+if (typeof bindSPALinks === 'function') bindSPALinks();
+
+// ── LÓGICA DE BÚSQUEDA Y FILTRADO ──
+(function() {
+    const searchInput = document.getElementById('searchInput');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const items = document.querySelectorAll('.product-item');
+    let currentFilter = 'all';
+
+    function filterProducts() {
+        const query = searchInput ? searchInput.value.toLowerCase() : '';
+        items.forEach(item => {
+            const name = item.dataset.name;
+            const cat = item.dataset.cat;
+            const status = item.dataset.status;
+            
+            const matchesSearch = name.includes(query) || cat.includes(query);
+            const matchesFilter = currentFilter === 'all' || status === currentFilter;
+            
+            if (matchesSearch && matchesFilter) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    if (searchInput) searchInput.addEventListener('input', filterProducts);
+    
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            filterBtns.forEach(b => {
+                b.style.background = 'transparent';
+                b.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            // Re-apply active styling based on type
+            const filterType = this.dataset.filter;
+            if (filterType === 'all') this.style.background = 'var(--treddy-cyan-dim)';
+            if (filterType === 'activo') this.style.background = 'rgba(34,197,94,0.1)';
+            if (filterType === 'inactivo') this.style.background = 'rgba(239,68,68,0.1)';
+            
+            currentFilter = filterType;
+            filterProducts();
+        });
+    });
+})();
+
+// ── LÓGICA DE ELIMINACIÓN CON SWEETALERT2 ──
+(function() {
+    const csrf = document.getElementById('csrfToken').value;
+    
+    document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const url = this.dataset.url;
+            const name = this.dataset.name;
+            
+            Swal.fire({
+                title: '¿Eliminar producto?',
+                html: `Estás a punto de borrar <b style="color:var(--treddy-cyan)">${name}</b>.<br>Esta acción es irreversible.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'swal2-popup',
+                    title: 'swal2-title',
+                    htmlContainer: 'swal2-html-container',
+                    confirmButton: 'swal2-confirm',
+                    cancelButton: 'swal2-cancel'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    NProgress.start();
+                    // Simulamos un POST para que Django lo procese
+                    const formData = new FormData();
+                    formData.append('csrfmiddlewaretoken', csrf);
+                    
+                    fetch(url, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(response => {
+                        // Django hará redirect('productos_list'), lo que hará que fetch devuelva success.
+                        Toast.fire({ icon: 'success', title: 'Producto eliminado' });
+                        if (typeof loadSPA === 'function') loadSPA("{% url 'productos_list' %}");
+                    })
+                    .catch(err => {
+                        NProgress.done();
+                        Toast.fire({ icon: 'error', title: 'Error al eliminar' });
+                    });
+                }
+            });
+        });
+    });
+})();
+</script>

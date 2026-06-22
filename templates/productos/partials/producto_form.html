@@ -1,0 +1,172 @@
+{% load widget_tweaks %}
+<div class="card mx-auto" style="max-width:620px;">
+    <div class="card-header d-flex align-items-center gap-3 py-3">
+        <button class="btn btn-sm btn-light spa-link" data-url="{% url 'productos_list' %}"
+                style="width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;">
+            ←
+        </button>
+        <h4 class="mb-0 fw-bold">{{ action }} Producto</h4>
+    </div>
+
+    <div class="card-body p-4">
+        <form id="spa-producto-form" method="POST"
+              action="{% if producto %}{% url 'producto_update' producto.pk %}{% else %}{% url 'producto_create' %}{% endif %}"
+              enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label">Nombre del producto</label>
+                    {% render_field form.nombre class="form-control" placeholder="Ej: Camiseta Treddy Premium" %}
+                    {% if form.nombre.errors %}<div class="text-danger small mt-1">{{ form.nombre.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Descripción</label>
+                    {% render_field form.descripcion class="form-control" rows="3" placeholder="Describe brevemente el producto..." %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Precio Base</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        {% render_field form.precio_base class="form-control" placeholder="0.00" %}
+                    </div>
+                    {% if form.precio_base.errors %}<div class="text-danger small mt-1">{{ form.precio_base.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Stock</label>
+                    {% render_field form.stock class="form-control" placeholder="0" %}
+                    {% if form.stock.errors %}<div class="text-danger small mt-1">{{ form.stock.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Categoría</label>
+                    {% render_field form.categoria class="form-control" placeholder="Ropa, Accesorios, etc." %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Estado</label>
+                    {% render_field form.estado class="form-select" %}
+                </div>
+                <div class="col-12 mt-4">
+                    <label class="form-label mb-2 fw-bold" style="color:var(--treddy-cyan);">📸 Imagen del Producto</label>
+                    <div class="row align-items-center">
+                        <div class="col-md-4 mb-3 mb-md-0 text-center">
+                            <!-- Preview Container -->
+                            <div class="img-preview-container" style="width:120px;height:120px;margin:0 auto;">
+                                {% if producto and producto.imagen %}
+                                <img id="imagePreview" src="{{ producto.imagen.url }}" style="width:100%;height:100%;object-fit:cover;">
+                                {% else %}
+                                <img id="imagePreview" src="" style="width:100%;height:100%;object-fit:cover;display:none;">
+                                <span id="imagePreviewIcon" style="font-size:2.5rem;color:var(--treddy-muted);">🖼️</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            {% render_field form.imagen class="form-control" id="imageInput" accept="image/*" %}
+                            <div class="form-text mt-2" style="color:var(--treddy-muted);font-size:0.8rem;">
+                                Sube una imagen en formato JPG, PNG o WebP. El tamaño recomendado es de 800×800px para evitar distorsión en la tienda.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-3 mt-5">
+                <button type="button" class="btn btn-light flex-fill spa-link" data-url="{% url 'productos_list' %}">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary flex-fill">
+                    💾 Guardar Producto
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function() {
+    // SPA Form: enviamos con fetch y redirigimos al completar
+    const form = document.getElementById('spa-producto-form');
+    if (!form) return;
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // ── Capa 4 de Seguridad: Validación JavaScript ──
+        const nombre = form.querySelector('[name="nombre"]').value.trim();
+        const precio = parseFloat(form.querySelector('[name="precio_base"]').value);
+        const stock = parseInt(form.querySelector('[name="stock"]').value);
+        
+        if (nombre.length < 3) {
+            Toast.fire({ icon: 'warning', title: 'El nombre debe tener al menos 3 caracteres.' });
+            return;
+        }
+        if (isNaN(precio) || precio <= 0) {
+            Toast.fire({ icon: 'warning', title: 'El precio debe ser mayor a 0.' });
+            return;
+        }
+        if (isNaN(stock) || stock < 0) {
+            Toast.fire({ icon: 'warning', title: 'El stock no puede ser negativo.' });
+            return;
+        }
+
+        const formData = new FormData(form);
+        const actionUrl = form.getAttribute('action');
+
+        fetch(actionUrl, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => {
+            // Django redirect tras guardar exitoso → cargamos lista
+            if (r.redirected || r.url.includes('productos/')) {
+                if (typeof loadSPA === 'function') {
+                    loadSPA("{% url 'productos_list' %}?ok=1");
+                } else {
+                    window.location.href = "{% url 'productos_list' %}";
+                }
+                return null;
+            }
+            return r.text();
+        })
+        .then(html => {
+            if (html === null) return;
+            // Si hay errores de validación, el server devuelve el form otra vez
+            document.getElementById('spa-container').innerHTML = html;
+            if (typeof bindSPALinks === 'function') bindSPALinks();
+        })
+        .catch(err => {
+            console.error('Error guardando producto:', err);
+            if (typeof Toast !== 'undefined') {
+                Toast.fire({ icon: 'error', title: 'Error al procesar la solicitud' });
+            }
+        });
+    });
+
+    // ── Image Preview Logic ──
+    const imageInput = document.getElementById('imageInput');
+    const imagePreview = document.getElementById('imagePreview');
+    const imagePreviewIcon = document.getElementById('imagePreviewIcon');
+
+    if (imageInput && imagePreview) {
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                    if (imagePreviewIcon) imagePreviewIcon.style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Bind spa-links locales
+    if (typeof bindSPALinks === 'function') bindSPALinks();
+})();
+</script>
