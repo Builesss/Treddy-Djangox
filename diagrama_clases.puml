@@ -1,0 +1,37 @@
+@startuml
+title Diagrama de Clases - Módulo de Productos y Usuarios
+
+class Usuario {
+    + email: String [Unique]
+    + telefono: String
+    + tipo_usuario: Enum(Admin, Vendedor, Cliente)
+    + estado: Enum(Activo, Inactivo, Pendiente)
+    + login()
+    + logout()
+}
+
+class Producto {
+    + nombre: String
+    + descripcion: Text
+    + precio_base: Decimal
+    + stock: Integer
+    + estado: Enum(activo, inactivo)
+    + categoria: String
+    + imagen: ImageField
+    + save()
+    + delete()
+}
+
+class HistorialProducto {
+    + accion: Enum(creacion, actualizacion, eliminacion)
+    + fecha: DateTime
+    + nombre_snapshot: String
+    + precio_snapshot: Decimal
+    + stock_snapshot: Integer
+    + estado_snapshot: String
+}
+
+Usuario "1" -- "*" HistorialProducto : registra >
+Producto "1" -- "*" HistorialProducto : posee >
+
+@enduml
