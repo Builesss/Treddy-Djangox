@@ -1,0 +1,33 @@
+@startuml casos_de_uso
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Cliente Registrado" as cliente
+actor "Vendedor" as vendedor
+actor "Administrador" as admin
+
+rectangle "Treddy System" {
+    usecase "Login al Sistema" as UC1
+    usecase "Ver Dashboard Cliente" as UC2
+    usecase "Ver Dashboard Vendedor" as UC3
+    usecase "Ver Dashboard Admin" as UC4
+    usecase "Gestionar Productos (CRUD)" as UC5
+    usecase "Registrar Nuevo Usuario" as UC6
+    usecase "Ver Historial de Cambios" as UC7
+}
+
+cliente --> UC1
+vendedor --> UC1
+admin --> UC1
+
+cliente --> UC6
+cliente --> UC2
+
+vendedor --> UC3
+vendedor --> UC5
+
+admin --> UC4
+admin --> UC5
+admin --> UC7
+
+@enduml

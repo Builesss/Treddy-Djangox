@@ -1,0 +1,49 @@
+@startuml modelo_de_datos
+hide circle
+skinparam classAttributeIconSize 0
+
+class Usuario {
+    + email: EmailField [PK]
+    + first_name: CharField
+    + last_name: CharField
+    + password: CharField
+    + telefono: CharField
+    + tipo_usuario: CharField
+    + estado: CharField
+    --
+    Validations:
+    - Regex Validator (telefono)
+}
+
+class Producto {
+    + id: AutoField [PK]
+    + nombre: CharField
+    + descripcion: TextField
+    + precio_base: DecimalField
+    + stock: IntegerField
+    + estado: CharField
+    + categoria: CharField
+    + imagen: ImageField
+    + created_at: DateTimeField
+    + updated_at: DateTimeField
+    --
+    Validations:
+    - MinValueValidator (precio, stock)
+    - MinLengthValidator (nombre)
+    - RegexValidator (categoria)
+}
+
+class HistorialProducto {
+    + id: AutoField [PK]
+    + producto_id: ForeignKey
+    + usuario_id: ForeignKey
+    + accion: CharField
+    + fecha: DateTimeField
+    + precio_base: DecimalField
+    + stock: IntegerField
+    + estado: CharField
+}
+
+Usuario "1" -- "0..*" HistorialProducto : Genera >
+Producto "1" *-- "0..*" HistorialProducto : Registra <
+@enduml
