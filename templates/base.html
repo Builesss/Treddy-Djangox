@@ -199,6 +199,16 @@ function loadSPA(url) {
             container.style.opacity = '0';
             setTimeout(() => {
                 container.innerHTML = html;
+                
+                // Ejecutar scripts insertados manualmente
+                const scripts = container.querySelectorAll('script');
+                scripts.forEach(oldScript => {
+                    const newScript = document.createElement('script');
+                    Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                    oldScript.parentNode.replaceChild(newScript, oldScript);
+                });
+
                 window.history.pushState({ url }, '', url);
                 bindSPALinks();
                 container.style.transition = 'opacity 0.3s ease';
@@ -224,10 +234,16 @@ function bindSPALinks() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', bindSPALinks);
+document.addEventListener('DOMContentLoaded', () => {
+    // Guardar el estado inicial en history para el popstate correcto
+    window.history.replaceState({ url: window.location.pathname + window.location.search }, '', window.location.href);
+    bindSPALinks();
+});
 
 window.addEventListener('popstate', e => {
-    if (e.state && e.state.url) loadSPA(e.state.url);
+    if (e.state && e.state.url) {
+        loadSPA(e.state.url);
+    }
 });
 </script>
 
