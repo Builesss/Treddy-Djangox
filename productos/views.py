@@ -105,6 +105,18 @@ def historial_list(request):
     return render(request, 'productos/historial_list.html', {'historial': historial})
 
 @login_required
+def mi_historial_list(request):
+    """Historial filtrado — solo acciones del vendedor autenticado."""
+    if getattr(request.user, 'tipo_usuario', '') not in ('Vendedor', 'Administrador'):
+        return redirect('dashboard')
+
+    historial = HistorialProducto.objects.filter(usuario=request.user).order_by('-fecha')
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render(request, 'productos/partials/historial_list.html', {'historial': historial, 'mi_historial': True})
+    return render(request, 'productos/historial_list.html', {'historial': historial, 'mi_historial': True})
+
+@login_required
 def exportar_csv(request):
     if getattr(request.user, 'tipo_usuario', '') == 'Cliente':
         messages.error(request, "Acceso denegado. No puedes exportar el inventario.")

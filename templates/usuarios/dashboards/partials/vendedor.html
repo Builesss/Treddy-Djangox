@@ -6,7 +6,7 @@
     padding: 2rem 2.5rem;">
     <h2 class="fw-bold mb-1" style="font-size:1.8rem;">🏪 Panel del Vendedor</h2>
     <p style="color:var(--treddy-muted);margin-bottom:0;">
-        Gestiona tu inventario de productos y monitorea el rendimiento.
+        Gestiona tu inventario de productos y monitorea tu rendimiento.
     </p>
 </div>
 
@@ -42,35 +42,122 @@
     </div>
 </div>
 
-<!-- ── Gráfico de Categorías (Chart.js) ─────────────────────── -->
+<!-- ── Gráficos ──────────────────────────────────────────────── -->
 <div class="row g-4 mb-5">
-    <div class="col-md-8 mx-auto">
-        <div class="card p-4">
+    <div class="col-md-7">
+        <div class="card p-4 h-100">
             <h5 class="fw-bold mb-4" style="font-size:1.1rem; color:var(--treddy-text);">Productos por Categoría</h5>
-            <div style="position: relative; height:280px; width:100%;">
+            <div style="position: relative; height:260px; width:100%;">
                 <canvas id="vendedorCatChart"></canvas>
             </div>
         </div>
     </div>
+    <div class="col-md-5">
+        <div class="card p-4 h-100">
+            <h5 class="fw-bold mb-4" style="font-size:1.1rem; color:var(--treddy-text);">Estado del Inventario</h5>
+            <div style="position: relative; height:260px; width:100%;">
+                <canvas id="vendedorEstadoChart"></canvas>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- ── Último Producto Modificado ────────────────────────────── -->
+{% if ultimo_modificado %}
+<div class="mb-5">
+    <h5 class="fw-semibold mb-3" style="color:var(--treddy-muted);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.08em;">
+        Última Actividad
+    </h5>
+    <div class="card p-3">
+        <div class="d-flex align-items-center gap-3">
+            <div style="font-size:2rem;">
+                {% if ultimo_modificado.accion == 'creacion' %}🟢
+                {% elif ultimo_modificado.accion == 'actualizacion' %}🟡
+                {% else %}🔴{% endif %}
+            </div>
+            <div class="flex-grow-1">
+                <div class="fw-bold">{{ ultimo_modificado.nombre }}</div>
+                <div style="color:var(--treddy-muted);font-size:0.82rem;">
+                    {{ ultimo_modificado.accion|capfirst }} · {{ ultimo_modificado.fecha|date:"d M Y, H:i" }}
+                </div>
+            </div>
+            <span class="badge
+                {% if ultimo_modificado.accion == 'creacion' %}bg-success
+                {% elif ultimo_modificado.accion == 'actualizacion' %}bg-warning text-dark
+                {% else %}bg-danger{% endif %}" style="font-size:0.75rem;">
+                {{ ultimo_modificado.accion|capfirst }}
+            </span>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- ── Productos Sin Stock ───────────────────────────────────── -->
+{% if productos_sin_stock %}
+<div class="mb-5">
+    <h5 class="fw-semibold mb-3" style="color:var(--treddy-muted);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.08em;">
+        ⚠️ Productos Sin Stock — Requieren Atención
+    </h5>
+    <div class="card p-0">
+        <div class="table-responsive">
+            <table class="table custom-table mb-0 align-middle">
+                <style>
+                    .custom-table td, .custom-table th { color: var(--treddy-text) !important; background-color: transparent !important; border-bottom-color: var(--treddy-border) !important; }
+                </style>
+                <thead style="background:var(--treddy-panel); color:var(--treddy-muted);">
+                    <tr>
+                        <th class="ps-4">Producto</th>
+                        <th>Categoría</th>
+                        <th>Estado</th>
+                        <th class="pe-4 text-end">Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in productos_sin_stock %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center gap-2">
+                                {% if p.imagen %}
+                                <img src="{{ p.imagen.url }}" style="width:32px;height:32px;border-radius:6px;object-fit:cover;">
+                                {% else %}
+                                <div style="width:32px;height:32px;border-radius:6px;background:var(--treddy-panel);display:flex;align-items:center;justify-content:center;">📦</div>
+                                {% endif %}
+                                <span class="fw-semibold">{{ p.nombre }}</span>
+                            </div>
+                        </td>
+                        <td style="color:var(--treddy-muted);">{{ p.categoria }}</td>
+                        <td><span class="badge bg-danger-subtle text-danger border border-danger-subtle">Sin Stock</span></td>
+                        <td class="pe-4 text-end">
+                            <a href="{% url 'producto_update' p.pk %}" class="btn btn-sm btn-outline-warning spa-link" data-url="{% url 'producto_update' p.pk %}">
+                                ✏️ Actualizar
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <!-- ── Acciones rápidas ──────────────────────────────────────── -->
 <h5 class="fw-semibold mb-3" style="color:var(--treddy-muted);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.08em;">
     Acciones Rápidas
 </h5>
 <div class="row g-3">
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="card p-3 spa-link" style="cursor:pointer;" data-url="{% url 'productos_list' %}">
             <div class="d-flex align-items-center gap-3">
                 <div style="font-size:2rem;">📋</div>
                 <div>
-                    <div class="fw-bold">Ver Mis Productos</div>
+                    <div class="fw-bold">Ver Productos</div>
                     <div style="color:var(--treddy-muted);font-size:0.82rem;">Revisa y edita tu inventario</div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="card p-3 spa-link" style="cursor:pointer;" data-url="{% url 'producto_create' %}">
             <div class="d-flex align-items-center gap-3">
                 <div style="font-size:2rem;">➕</div>
@@ -81,50 +168,90 @@
             </div>
         </div>
     </div>
+    <div class="col-md-4">
+        <div class="card p-3 spa-link" style="cursor:pointer;" data-url="{% url 'editar_perfil' %}">
+            <div class="d-flex align-items-center gap-3">
+                <div style="font-size:2rem;">👤</div>
+                <div>
+                    <div class="fw-bold">Editar Perfil</div>
+                    <div style="color:var(--treddy-muted);font-size:0.82rem;">Actualiza tus datos personales</div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
 (function() {
     if (typeof bindSPALinks === 'function') bindSPALinks();
 
-    function initVendedorChart() {
-        const canvas = document.getElementById('vendedorCatChart');
-        if (!canvas) return;
-        if (window.vendedorCatChartObj) window.vendedorCatChartObj.destroy();
+    function initVendedorCharts() {
+        // ── Gráfico de Barras por Categoría ──
+        const catCanvas = document.getElementById('vendedorCatChart');
+        if (catCanvas) {
+            if (window.vendedorCatChartObj) window.vendedorCatChartObj.destroy();
+            const catLabels = JSON.parse('{{ chart_cat_labels|escapejs }}');
+            const catData = JSON.parse('{{ chart_cat_data|escapejs }}');
+            const colors = ['#00E6F6', '#3B82F6', '#6366F1', '#8B5CF6', '#EC4899', '#F59E0B', '#22C55E', '#EF4444'];
 
-        const labels = JSON.parse('{{ chart_cat_labels|escapejs }}');
-        const data = JSON.parse('{{ chart_cat_data|escapejs }}');
-        const colors = ['#00E6F6', '#3B82F6', '#6366F1', '#8B5CF6', '#EC4899', '#F59E0B', '#22C55E', '#EF4444'];
-
-        window.vendedorCatChartObj = new Chart(canvas, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Productos',
-                    data: data,
-                    backgroundColor: colors.slice(0, labels.length),
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
+            window.vendedorCatChartObj = new Chart(catCanvas, {
+                type: 'bar',
+                data: {
+                    labels: catLabels,
+                    datasets: [{
+                        label: 'Productos',
+                        data: catData,
+                        backgroundColor: colors.slice(0, catLabels.length),
+                        borderRadius: 6
+                    }]
                 },
-                scales: {
-                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8', stepSize: 1 } },
-                    x: { grid: { display: false }, ticks: { color: '#94A3B8' } }
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8', stepSize: 1 } },
+                        x: { grid: { display: false }, ticks: { color: '#94A3B8' } }
+                    }
                 }
-            }
-        });
+            });
+        }
+
+        // ── Gráfico de Pastel — Estado ──
+        const estadoCanvas = document.getElementById('vendedorEstadoChart');
+        if (estadoCanvas) {
+            if (window.vendedorEstadoChartObj) window.vendedorEstadoChartObj.destroy();
+            const estadoLabels = JSON.parse('{{ chart_estado_labels|escapejs }}');
+            const estadoData = JSON.parse('{{ chart_estado_data|escapejs }}');
+            const estadoColors = ['#22C55E', '#EF4444', '#F59E0B'];
+
+            window.vendedorEstadoChartObj = new Chart(estadoCanvas, {
+                type: 'doughnut',
+                data: {
+                    labels: estadoLabels,
+                    datasets: [{
+                        data: estadoData,
+                        backgroundColor: estadoColors.slice(0, estadoLabels.length),
+                        borderWidth: 0,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#94A3B8', padding: 16, font: { size: 12 } }
+                        }
+                    }
+                }
+            });
+        }
     }
 
     if (typeof Chart !== 'undefined') {
-        initVendedorChart();
+        initVendedorCharts();
     } else {
-        setTimeout(initVendedorChart, 500);
+        setTimeout(initVendedorCharts, 500);
     }
 })();
 </script>

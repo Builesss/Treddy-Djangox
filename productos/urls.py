@@ -7,6 +7,7 @@ urlpatterns = [
     path('editar/<int:pk>/', views.producto_update, name='producto_update'),
     path('eliminar/<int:pk>/', views.producto_delete, name='producto_delete'),
     path('historial/', views.historial_list, name='historial_list'),
+    path('mi-historial/', views.mi_historial_list, name='mi_historial_list'),
     path('exportar/', views.exportar_csv, name='exportar_csv'),
     
     # Cliente / E-commerce

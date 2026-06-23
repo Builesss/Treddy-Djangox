@@ -66,9 +66,18 @@ def dashboard_view(request):
         full_tpl    = 'usuarios/dashboards/vendedor.html'
         partial_tpl = 'usuarios/dashboards/partials/vendedor.html'
         
+        from productos.models import HistorialProducto
+
         cat_qs = Producto.objects.values('categoria').annotate(count=Count('categoria'))
         cat_labels = [item['categoria'] for item in cat_qs]
         cat_data = [item['count'] for item in cat_qs]
+
+        estado_qs = Producto.objects.values('estado').annotate(count=Count('estado'))
+        estado_labels = [item['estado'].capitalize() for item in estado_qs]
+        estado_data = [item['count'] for item in estado_qs]
+
+        productos_sin_stock = Producto.objects.filter(stock=0).order_by('nombre')
+        ultimo_modificado = HistorialProducto.objects.filter(usuario=user).order_by('-fecha').first()
 
         context.update({
             'total_productos':      Producto.objects.count(),
@@ -77,6 +86,10 @@ def dashboard_view(request):
             'categorias':           Producto.objects.values('categoria').distinct().count(),
             'chart_cat_labels':     json.dumps(cat_labels),
             'chart_cat_data':       json.dumps(cat_data),
+            'chart_estado_labels':  json.dumps(estado_labels),
+            'chart_estado_data':    json.dumps(estado_data),
+            'productos_sin_stock':  productos_sin_stock,
+            'ultimo_modificado':    ultimo_modificado,
         })
     else:
         full_tpl    = 'usuarios/dashboards/cliente.html'
