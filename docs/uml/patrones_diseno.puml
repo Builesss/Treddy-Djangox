@@ -1,0 +1,72 @@
+@startuml patrones_diseno
+title Patrones de Diseño Aplicados — Treddy
+
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "Patrón Strategy\n(Dashboard por Rol)" {
+    interface "DashboardStrategy" as strategy {
+        + get_template(): str
+        + get_context(): dict
+    }
+    class "AdminDashboard" as admin_s {
+        + get_template(): 'dashboards/admin.html'
+        + get_context(): {usuarios, productos, historial...}
+    }
+    class "VendedorDashboard" as vendedor_s {
+        + get_template(): 'dashboards/vendedor.html'
+        + get_context(): {productos, historial...}
+    }
+    class "ClienteDashboard" as cliente_s {
+        + get_template(): 'dashboards/cliente.html'
+        + get_context(): {pedidos, favoritos...}
+    }
+    class "dashboard_view()" as context {
+        + dispatch(): selecciona estrategia
+    }
+    strategy <|.. admin_s
+    strategy <|.. vendedor_s
+    strategy <|.. cliente_s
+    context --> strategy : usa >
+}
+
+package "Patrón Observer\n(Historial de Auditoría)" {
+    class "Producto\n(Subject)" as prod_obs {
+        + save()
+        + delete()
+    }
+    class "Views (producto_create,\nproducto_update,\nproducto_delete)" as trigger {
+        + llama HistorialProducto.create()
+    }
+    class "HistorialProducto\n(Observer)" as hist_obs {
+        + objects.create(accion, snapshot)
+    }
+    prod_obs --> trigger : notifica >
+    trigger --> hist_obs : registra snapshot >
+}
+
+package "Patrón SPA\n(Single Page Application)" {
+    class "base.html\n(Shell)" as shell {
+        + sidebar con links spa-link
+        + #content-area div
+        + loadContent(url): fetch AJAX
+        + bindSPALinks()
+    }
+    class "Partials\n(Fragmentos HTML)" as partials {
+        + producto_list.html
+        + cart.html
+        + pedidos_list.html
+        + favoritos_list.html
+        + historial_list.html
+        + ...
+    }
+    class "Views\n(AJAX Handler)" as ajax_views {
+        + X-Requested-With: XMLHttpRequest
+        + render(request, partial_template)
+    }
+    shell --> ajax_views : Fetch GET/POST
+    ajax_views --> partials : render() parcial
+    partials --> shell : HTML inyectado en #content-area
+}
+
+@enduml

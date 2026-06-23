@@ -1,0 +1,40 @@
+@startuml diagrama_estados_producto
+title Diagrama de Estados — Ciclo de Vida de un Producto
+
+[*] --> Activo : Producto creado\n(accion: 'creacion')
+
+Activo --> Inactivo : Administrador/Vendedor\ndesactiva el producto\n(accion: 'actualizacion')
+
+Inactivo --> Activo : Administrador/Vendedor\nactiva el producto\n(accion: 'actualizacion')
+
+Activo --> Eliminado : Administrador/Vendedor\nelimina el producto\n(accion: 'eliminacion')
+
+Inactivo --> Eliminado : Administrador/Vendedor\nelimina el producto\n(accion: 'eliminacion')
+
+Eliminado --> [*]
+
+state Activo {
+    [*] --> Disponible
+    Disponible --> SinStock : stock = 0
+    SinStock --> Disponible : stock > 0
+}
+
+note right of Activo
+    Visible en el catálogo
+    Clientes pueden agregar
+    al carrito y favoritos
+end note
+
+note right of Inactivo
+    Oculto del catálogo público
+    Solo visible para
+    Administrador/Vendedor
+end note
+
+note right of Eliminado
+    Se registra snapshot en
+    HistorialProducto antes
+    de eliminación física
+end note
+
+@enduml

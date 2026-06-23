@@ -1,0 +1,51 @@
+@startuml secuencia_checkout
+title Diagrama de Secuencia — Proceso de Compra (Checkout)
+
+actor "Cliente" as user
+participant "producto_list.html\n(Template)" as catalog
+participant "cart.html\n(Template)" as cart_tpl
+participant "productos/views.py\n(View)" as view
+participant "Session\n(django_session)" as session
+database "Supabase\n(PostgreSQL)" as db
+
+== Agregar Producto al Carrito ==
+user -> catalog : Clic en "Agregar al Carrito"
+catalog -> view : POST /productos/carrito/add/{pk}/ [AJAX]
+view -> session : cart = session.get('cart', {})
+view -> session : cart[pk] += 1 / cart[pk] = 1
+session --> view : cart actualizado
+view -> session : session['cart'] = cart
+view --> catalog : JsonResponse {status:'success', cart_count:N}
+catalog --> user : Toast "Producto añadido (N items)"
+
+== Ver Carrito ==
+user -> view : GET /productos/carrito/ [AJAX]
+view -> session : cart = session.get('cart', {})
+loop Para cada pk, qty en cart
+    view -> db : SELECT FROM productos_producto WHERE id=pk
+    db --> view : Producto
+    view -> view : subtotal = precio * qty
+end
+view --> cart_tpl : render(cart_items, total)
+cart_tpl --> user : Muestra tabla de carrito + resumen
+
+== Procesar Pago ==
+user -> cart_tpl : Clic "Procesar Pago"
+cart_tpl -> view : POST /productos/checkout/
+view -> session : cart = session.get('cart', {})
+alt Carrito vacío
+    view --> user : Error "Tu carrito está vacío"
+else Carrito con productos
+    view -> db : INSERT INTO productos_pedido (usuario, total=0)
+    db --> view : pedido creado (id)
+    loop Para cada pk, qty en cart
+        view -> db : SELECT FROM productos_producto WHERE id=pk
+        view -> db : INSERT INTO productos_detallepedido (pedido, producto, qty, precio)
+    end
+    view -> view : pedido.total = suma total
+    view -> db : UPDATE productos_pedido SET total=? WHERE id=?
+    view -> session : session['cart'] = {}
+    view --> user : redirect /productos/pedidos/ + Flash "Pedido #N realizado"
+end
+
+@enduml

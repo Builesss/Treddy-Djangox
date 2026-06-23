@@ -1,0 +1,42 @@
+@startuml secuencia_login
+title Diagrama de Secuencia — Inicio de Sesión
+
+actor Usuario as user
+participant "login.html\n(Template)" as tpl
+participant "CustomLoginView\n(View)" as view
+participant "CustomLoginForm\n(Form)" as form
+participant "AuthenticationBackend\n(Django Auth)" as auth
+database "Supabase\n(PostgreSQL)" as db
+
+user -> tpl : Ingresa email y contraseña
+tpl -> view : POST /usuarios/login/
+view -> form : form.is_valid()
+
+alt Validación de campo fallida
+    form -> form : clean_username() — regex email
+    form --> view : ValidationError
+    view --> tpl : form_invalid() — render con errores
+    tpl --> user : Muestra alerta de error de campo
+else Credenciales correctas
+    form -> auth : authenticate(username, password)
+    auth -> db : SELECT FROM usuarios_usuario WHERE email=?
+    db --> auth : Usuario encontrado
+    auth --> form : User object
+    form --> view : form_valid()
+    view -> view : get_success_url()
+    view -> view : Verifica user.estado == 'Activo'
+    alt Usuario Inactivo
+        view --> tpl : logout() + redirect login
+        tpl --> user : Alerta "Cuenta no activa"
+    else Usuario Activo
+        view -> db : UPDATE last_login
+        view --> user : redirect /usuarios/dashboard/
+    end
+else Credenciales incorrectas
+    auth --> form : None
+    form --> view : form_invalid()
+    view --> tpl : render con non_field_errors
+    tpl --> user : Alerta "Correo o contraseña incorrectos"
+end
+
+@enduml

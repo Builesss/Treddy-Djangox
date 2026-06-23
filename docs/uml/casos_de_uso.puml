@@ -1,33 +1,91 @@
 @startuml casos_de_uso
 left to right direction
 skinparam packageStyle rectangle
+skinparam actorStyle awesome
 
 actor "Cliente Registrado" as cliente
 actor "Vendedor" as vendedor
 actor "Administrador" as admin
 
-rectangle "Treddy System" {
-    usecase "Login al Sistema" as UC1
-    usecase "Ver Dashboard Cliente" as UC2
-    usecase "Ver Dashboard Vendedor" as UC3
-    usecase "Ver Dashboard Admin" as UC4
-    usecase "Gestionar Productos (CRUD)" as UC5
-    usecase "Registrar Nuevo Usuario" as UC6
-    usecase "Ver Historial de Cambios" as UC7
+rectangle "Treddy — Sistema de Gestión" {
+
+    package "Autenticación" {
+        usecase "Iniciar Sesión" as UC1
+        usecase "Registrarse en el Sistema" as UC2
+        usecase "Editar Perfil" as UC3
+        usecase "Cerrar Sesión" as UC4
+    }
+
+    package "Gestión de Productos" {
+        usecase "Ver Catálogo de Productos" as UC5
+        usecase "Crear Producto" as UC6
+        usecase "Editar Producto" as UC7
+        usecase "Eliminar Producto" as UC8
+        usecase "Exportar Inventario a CSV" as UC9
+    }
+
+    package "Auditoría" {
+        usecase "Ver Historial de Cambios" as UC10
+        usecase "Registrar Acción en Historial" as UC11
+    }
+
+    package "E-Commerce (Cliente)" {
+        usecase "Agregar a Favoritos" as UC12
+        usecase "Ver Lista de Favoritos" as UC13
+        usecase "Agregar al Carrito" as UC14
+        usecase "Ver Carrito de Compras" as UC15
+        usecase "Procesar Pago (Checkout)" as UC16
+        usecase "Ver Mis Pedidos" as UC17
+    }
+
+    package "Administración de Usuarios" {
+        usecase "Ver Directorio de Usuarios" as UC18
+        usecase "Registrar Nuevo Usuario (Admin)" as UC19
+        usecase "Eliminar Usuario" as UC20
+    }
 }
 
+' ── Relaciones Cliente ──
 cliente --> UC1
-vendedor --> UC1
-admin --> UC1
-
-cliente --> UC6
 cliente --> UC2
+cliente --> UC3
+cliente --> UC4
+cliente --> UC5
+cliente --> UC12
+cliente --> UC13
+cliente --> UC14
+cliente --> UC15
+cliente --> UC16
+cliente --> UC17
 
+' ── Relaciones Vendedor ──
+vendedor --> UC1
 vendedor --> UC3
+vendedor --> UC4
 vendedor --> UC5
+vendedor --> UC6
+vendedor --> UC7
+vendedor --> UC8
+vendedor --> UC9
 
+' ── Relaciones Administrador ──
+admin --> UC1
+admin --> UC3
 admin --> UC4
 admin --> UC5
+admin --> UC6
 admin --> UC7
+admin --> UC8
+admin --> UC9
+admin --> UC10
+admin --> UC18
+admin --> UC19
+admin --> UC20
+
+' ── Includes / Extends ──
+UC6 ..> UC11 : <<include>>
+UC7 ..> UC11 : <<include>>
+UC8 ..> UC11 : <<include>>
+UC16 ..> UC15 : <<include>>
 
 @enduml

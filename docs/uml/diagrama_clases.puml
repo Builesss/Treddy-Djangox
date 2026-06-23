@@ -1,37 +1,118 @@
-@startuml
-title Diagrama de Clases - Módulo de Productos y Usuarios
+@startuml diagrama_clases
+title Diagrama de Clases — Treddy (Módulos Usuarios y Productos)
+skinparam classAttributeIconSize 0
+skinparam classFontSize 12
 
+' ── Módulo Usuarios ──────────────────────────────────────
 class Usuario {
-    + email: String [Unique]
-    + telefono: String
-    + tipo_usuario: Enum(Admin, Vendedor, Cliente)
-    + estado: Enum(Activo, Inactivo, Pendiente)
-    + login()
-    + logout()
+    + id: AutoField [PK]
+    + email: EmailField [Unique]
+    + username: CharField [= email]
+    + first_name: CharField
+    + last_name: CharField
+    + password: CharField [hashed]
+    + telefono: CharField [nullable]
+    + tipo_usuario: Enum {Administrador, Vendedor, Cliente}
+    + estado: Enum {Activo, Inactivo, Pendiente}
+    --
+    + get_full_name(): str
+    + __str__(): str
 }
 
+' ── Módulo Productos ─────────────────────────────────────
 class Producto {
-    + nombre: String
-    + descripcion: Text
-    + precio_base: Decimal
-    + stock: Integer
-    + estado: Enum(activo, inactivo)
-    + categoria: String
-    + imagen: ImageField
-    + save()
-    + delete()
+    + id: AutoField [PK]
+    + nombre: CharField
+    + descripcion: TextField
+    + precio_base: DecimalField
+    + stock: IntegerField
+    + estado: Enum {activo, inactivo}
+    + categoria: CharField
+    + imagen: ImageField [nullable]
+    + created_at: DateTimeField [auto]
+    + updated_at: DateTimeField [auto]
+    --
+    + __str__(): str
 }
 
 class HistorialProducto {
-    + accion: Enum(creacion, actualizacion, eliminacion)
-    + fecha: DateTime
-    + nombre_snapshot: String
-    + precio_snapshot: Decimal
-    + stock_snapshot: Integer
-    + estado_snapshot: String
+    + id: AutoField [PK]
+    + nombre: CharField [snapshot]
+    + precio_base: DecimalField [snapshot]
+    + stock: IntegerField [snapshot]
+    + estado: CharField [snapshot]
+    + accion: Enum {creacion, actualizacion, eliminacion}
+    + fecha: DateTimeField [auto]
+    --
+    + __str__(): str
 }
 
-Usuario "1" -- "*" HistorialProducto : registra >
-Producto "1" -- "*" HistorialProducto : posee >
+' ── Módulo E-Commerce ─────────────────────────────────────
+class Favorito {
+    + id: AutoField [PK]
+    --
+    + __str__(): str
+}
+
+class Pedido {
+    + id: AutoField [PK]
+    + total: DecimalField
+    + estado: Enum {pendiente, enviado, entregado, cancelado}
+    + created_at: DateTimeField [auto]
+    --
+    + __str__(): str
+}
+
+class DetallePedido {
+    + id: AutoField [PK]
+    + nombre_producto: CharField [snapshot]
+    + cantidad: IntegerField
+    + precio_unitario: DecimalField
+    --
+    + __str__(): str
+}
+
+' ── Formularios (Boundaries) ─────────────────────────────
+class CustomLoginForm {
+    + username: EmailField
+    + password: CharField
+    --
+    + clean_username(): str
+}
+
+class CustomRegistroForm {
+    + email: EmailField
+    + first_name: CharField
+    + last_name: CharField
+    + telefono: CharField
+    --
+    + clean_email(): str
+    + save(): Usuario
+}
+
+class AdminRegistroForm {
+    + tipo_usuario: ChoiceField
+    --
+    + save(): Usuario
+}
+
+class ProductoForm {
+    --
+    + clean_nombre(): str
+    + clean_precio_base(): Decimal
+}
+
+' ── Relaciones ───────────────────────────────────────────
+Usuario "1" -- "0..*" HistorialProducto : registra >
+Producto "1" -- "0..*" HistorialProducto : es auditado por >
+
+Usuario "1" -- "0..*" Favorito : tiene >
+Producto "1" -- "0..*" Favorito : es marcado en >
+
+Usuario "1" -- "0..*" Pedido : realiza >
+Pedido "1" *-- "1..*" DetallePedido : contiene >
+Producto "1" -- "0..*" DetallePedido : referenciado en >
+
+CustomRegistroForm <|-- AdminRegistroForm : hereda
 
 @enduml

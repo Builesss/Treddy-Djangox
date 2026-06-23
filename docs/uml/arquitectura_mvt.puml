@@ -1,40 +1,78 @@
 @startuml arquitectura_mvt
 !theme bluegray
+title Arquitectura MVT + SPA — Treddy
 
 skinparam componentStyle rectangle
+skinparam ArrowFontSize 10
 
-node "Cliente (Navegador)" as browser {
-    [HTML5 / CSS3 / JS]
-    [Fetch API (SPA)]
-    [SweetAlert2 & NProgress]
+node "Cliente (Navegador Web)" as browser {
+    [HTML5 / CSS Variables]
+    [Fetch API (AJAX/SPA)]
+    [SweetAlert2 (Alertas)]
+    [NProgress (Barra progreso)]
+    [Bootstrap 5]
 }
 
-node "Servidor Django (Backend)" as django {
-    package "Capa de Presentación (Template)" as templates {
-        [base.html]
-        [dashboards/*.html]
-        [productos/*.html]
-    }
-    
-    package "Capa Lógica (View)" as views {
-        [usuarios/views.py]
-        [productos/views.py]
-    }
-    
-    package "Capa de Datos (Model)" as models {
-        [usuarios/models.py]
-        [productos/models.py]
+cloud "Supabase Cloud" as cloud {
+    database "PostgreSQL 17" as db {
+        [usuarios_usuario]
+        [productos_producto]
+        [productos_historialproducto]
+        [productos_favorito]
+        [productos_pedido]
+        [productos_detallepedido]
+        [django_session]
     }
 }
 
-database "Base de Datos (SQLite)" as db {
-    [Tablas: Usuario, Producto, Historial]
+node "Servidor Django 6 (Backend)" as django {
+    package "Capa de Presentación (Template Layer)" as templates {
+        [base.html (SPA Shell)]
+        [dashboards/admin.html]
+        [dashboards/cliente.html]
+        [dashboards/vendedor.html]
+        [productos/partials/*.html]
+        [usuarios/partials/*.html]
+    }
+
+    package "Capa Lógica (View Layer)" as views {
+        [CustomLoginView]
+        [dashboard_view (Strategy Pattern)]
+        [producto_list / create / update / delete]
+        [toggle_favorito / favoritos_list]
+        [add_to_cart / view_cart / checkout]
+        [pedidos_list / historial_list]
+    }
+
+    package "Capa de Datos (Model Layer)" as models {
+        [Usuario (AbstractUser)]
+        [Producto]
+        [HistorialProducto (Observer)]
+        [Favorito]
+        [Pedido / DetallePedido]
+    }
+
+    package "URLs / Router" as urls {
+        [treddy_project/urls.py]
+        [usuarios/urls.py]
+        [productos/urls.py]
+    }
+
+    package "Formularios (Forms)" as forms {
+        [CustomLoginForm]
+        [CustomRegistroForm]
+        [AdminRegistroForm]
+        [ProductoForm]
+        [EditarPerfilForm]
+    }
 }
 
-browser <--> views : "Peticiones HTTP/AJAX (GET, POST)"
-views <--> models : "Lectura / Escritura (ORM)"
-models <--> db : "Consultas SQL (Singleton Connection)"
-views --> templates : "Renderiza Contexto"
-templates --> browser : "Respuesta HTML (Bloques SPA)"
+browser <--> views : "HTTP / AJAX (GET, POST)"
+urls --> views : "dispatch()"
+views <--> models : "ORM QuerySet"
+views --> templates : "render(context)"
+templates --> browser : "HTML Parcial / Completo"
+forms --> views : "validate()"
+models <--> db : "psycopg2 / dj-database-url"
 
 @enduml

@@ -1,49 +1,87 @@
 @startuml modelo_de_datos
 hide circle
 skinparam classAttributeIconSize 0
+title Modelo Entidad-Relación — Treddy (Supabase / PostgreSQL)
 
-class Usuario {
-    + email: EmailField [PK]
-    + first_name: CharField
-    + last_name: CharField
-    + password: CharField
-    + telefono: CharField
-    + tipo_usuario: CharField
-    + estado: CharField
+entity "usuarios_usuario" as usuario {
+    * id : BIGSERIAL <<PK>>
     --
-    Validations:
-    - Regex Validator (telefono)
+    * email : VARCHAR(254) <<UNIQUE>>
+    * username : VARCHAR(150)
+    * password : VARCHAR(128)
+    * first_name : VARCHAR(150)
+    * last_name : VARCHAR(150)
+      telefono : VARCHAR(20)
+    * tipo_usuario : VARCHAR(20)
+    * estado : VARCHAR(20)
+    * is_active : BOOLEAN
+    * is_staff : BOOLEAN
+    * date_joined : TIMESTAMPTZ
+    * last_login : TIMESTAMPTZ
 }
 
-class Producto {
-    + id: AutoField [PK]
-    + nombre: CharField
-    + descripcion: TextField
-    + precio_base: DecimalField
-    + stock: IntegerField
-    + estado: CharField
-    + categoria: CharField
-    + imagen: ImageField
-    + created_at: DateTimeField
-    + updated_at: DateTimeField
+entity "productos_producto" as producto {
+    * id : BIGSERIAL <<PK>>
     --
-    Validations:
-    - MinValueValidator (precio, stock)
-    - MinLengthValidator (nombre)
-    - RegexValidator (categoria)
+    * nombre : VARCHAR(200)
+    * descripcion : TEXT
+    * precio_base : NUMERIC(10,2)
+    * stock : INTEGER
+    * estado : VARCHAR(10)
+    * categoria : VARCHAR(100)
+      imagen : VARCHAR(255)
+    * created_at : TIMESTAMPTZ
+    * updated_at : TIMESTAMPTZ
 }
 
-class HistorialProducto {
-    + id: AutoField [PK]
-    + producto_id: ForeignKey
-    + usuario_id: ForeignKey
-    + accion: CharField
-    + fecha: DateTimeField
-    + precio_base: DecimalField
-    + stock: IntegerField
-    + estado: CharField
+entity "productos_historialproducto" as historial {
+    * id : BIGSERIAL <<PK>>
+    --
+    * nombre : VARCHAR(200)
+      precio_base : NUMERIC(10,2)
+      stock : INTEGER
+      estado : VARCHAR(20)
+    * accion : VARCHAR(20)
+    * fecha : TIMESTAMPTZ
+      producto_id : BIGINT <<FK, nullable>>
+    * usuario_id : BIGINT <<FK>>
 }
 
-Usuario "1" -- "0..*" HistorialProducto : Genera >
-Producto "1" *-- "0..*" HistorialProducto : Registra <
+entity "productos_favorito" as favorito {
+    * id : BIGSERIAL <<PK>>
+    --
+    * usuario_id : BIGINT <<FK>>
+    * producto_id : BIGINT <<FK>>
+}
+
+entity "productos_pedido" as pedido {
+    * id : BIGSERIAL <<PK>>
+    --
+    * usuario_id : BIGINT <<FK>>
+    * total : NUMERIC(10,2)
+    * estado : VARCHAR(20)
+    * created_at : TIMESTAMPTZ
+}
+
+entity "productos_detallepedido" as detalle {
+    * id : BIGSERIAL <<PK>>
+    --
+    * pedido_id : BIGINT <<FK>>
+      producto_id : BIGINT <<FK, nullable>>
+    * nombre_producto : VARCHAR(200)
+    * cantidad : INTEGER
+    * precio_unitario : NUMERIC(10,2)
+}
+
+' ── Relaciones ──────────────────────────────────────────────
+usuario ||--o{ historial : "registra"
+producto ||--o{ historial : "genera"
+
+usuario ||--o{ favorito : "tiene"
+producto ||--o{ favorito : "marcado en"
+
+usuario ||--o{ pedido : "realiza"
+pedido ||--|{ detalle : "contiene"
+producto |o--o{ detalle : "referenciado"
+
 @enduml
