@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.http import HttpResponse
 from .models import Producto, HistorialProducto
 from .forms import ProductoForm
@@ -17,6 +18,10 @@ def producto_list(request):
 
 @login_required
 def producto_create(request):
+    if getattr(request.user, 'tipo_usuario', '') == 'Cliente':
+        messages.error(request, "Acceso denegado. Solo administradores o vendedores pueden crear productos.")
+        return redirect('dashboard')
+        
     if request.method == 'POST':
         form = ProductoForm(request.POST, request.FILES)
         if form.is_valid():
@@ -41,6 +46,10 @@ def producto_create(request):
 
 @login_required
 def producto_update(request, pk):
+    if getattr(request.user, 'tipo_usuario', '') == 'Cliente':
+        messages.error(request, "Acceso denegado. No tienes permisos para editar.")
+        return redirect('dashboard')
+        
     producto = get_object_or_404(Producto, pk=pk)
     if request.method == 'POST':
         form = ProductoForm(request.POST, request.FILES, instance=producto)
@@ -65,6 +74,10 @@ def producto_update(request, pk):
 
 @login_required
 def producto_delete(request, pk):
+    if getattr(request.user, 'tipo_usuario', '') == 'Cliente':
+        messages.error(request, "Acceso denegado. No tienes permisos para eliminar.")
+        return redirect('dashboard')
+        
     producto = get_object_or_404(Producto, pk=pk)
     if request.method == 'POST':
         HistorialProducto.objects.create(
@@ -93,6 +106,10 @@ def historial_list(request):
 
 @login_required
 def exportar_csv(request):
+    if getattr(request.user, 'tipo_usuario', '') == 'Cliente':
+        messages.error(request, "Acceso denegado. No puedes exportar el inventario.")
+        return redirect('dashboard')
+        
     import csv
     from django.http import HttpResponse
     

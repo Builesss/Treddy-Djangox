@@ -27,7 +27,7 @@ class HistorialProducto(models.Model):
         ('actualizacion', 'Actualización'),
         ('eliminacion', 'Eliminación'),
     )
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name='historial')
+    producto = models.ForeignKey(Producto, on_delete=models.SET_NULL, null=True, related_name='historial')
     nombre = models.CharField(max_length=150, blank=True, null=True)
     precio_base = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     stock = models.IntegerField(blank=True, null=True)

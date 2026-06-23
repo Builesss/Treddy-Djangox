@@ -21,7 +21,7 @@
                     {% for u in usuarios %}
                     <tr>
                         <td class="ps-4">
-                            <div class="fw-bold">{{ u.get_full_name|default:u.email }}</div>
+                            <div class="fw-bold" style="color:var(--treddy-text);">{{ u.get_full_name|default:u.email }}</div>
                             <div class="small" style="color:var(--treddy-muted);">{{ u.email }}</div>
                         </td>
                         <td>

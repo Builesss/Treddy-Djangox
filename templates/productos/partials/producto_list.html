@@ -5,12 +5,14 @@
         <p class="mb-0" style="color:var(--treddy-muted);font-size:0.85rem;">Inventario actualizado del sistema</p>
     </div>
     <div class="d-flex gap-2">
+        {% if request.user.tipo_usuario != 'Cliente' %}
         <a href="{% url 'exportar_csv' %}" class="btn btn-outline-success px-3" download>
             📄 Exportar CSV
         </a>
         <button class="btn btn-primary px-4 spa-link" data-url="{% url 'producto_create' %}">
             + Nuevo Producto
         </button>
+        {% endif %}
     </div>
 </div>
 
@@ -83,6 +85,7 @@
                 </div>
             </div>
 
+            {% if request.user.tipo_usuario != 'Cliente' %}
             <div class="card-footer p-2 d-flex gap-2 bg-transparent border-0">
                 <button class="btn btn-outline-primary btn-sm flex-fill spa-link" style="border-radius:0.5rem;"
                         data-url="{% url 'producto_update' producto.pk %}">
@@ -94,6 +97,13 @@
                     🗑️ Eliminar
                 </button>
             </div>
+            {% else %}
+            <div class="card-footer p-2 d-flex gap-2 bg-transparent border-0">
+                <button class="btn btn-primary btn-sm flex-fill" style="border-radius:0.5rem;" onclick="Toast.fire({icon:'success', title:'Agregado al carrito (Simulación)'})">
+                    🛒 Añadir al carrito
+                </button>
+            </div>
+            {% endif %}
         </div>
     </div>
     {% empty %}
