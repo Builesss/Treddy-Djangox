@@ -14,6 +14,7 @@
                         <th>Rol</th>
                         <th>Estado</th>
                         <th>Registro</th>
+                        <th class="text-end pe-4">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -21,7 +22,7 @@
                     <tr>
                         <td class="ps-4">
                             <div class="fw-bold">{{ u.get_full_name|default:u.email }}</div>
-                            <div class="small text-muted">{{ u.email }}</div>
+                            <div class="small" style="color:var(--treddy-muted);">{{ u.email }}</div>
                         </td>
                         <td>
                             <span class="badge {% if u.tipo_usuario == 'Administrador' %}bg-primary{% elif u.tipo_usuario == 'Vendedor' %}bg-info{% else %}bg-secondary{% endif %}">
@@ -34,10 +35,22 @@
                             </span>
                         </td>
                         <td>{{ u.date_joined|date:"d M Y" }}</td>
+                        <td class="text-end pe-4">
+                            {% if u.pk != request.user.pk %}
+                            <button type="button" class="btn btn-outline-danger btn-sm btn-delete-user"
+                                    data-pk="{{ u.pk }}"
+                                    data-name="{{ u.get_full_name|default:u.email }}"
+                                    title="Eliminar usuario">
+                                🗑️
+                            </button>
+                            {% else %}
+                            <span class="badge bg-dark" style="font-size:0.7rem;">Tú</span>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="4" class="text-center py-4 text-muted">No hay usuarios registrados.</td>
+                        <td colspan="5" class="text-center py-4" style="color:var(--treddy-muted);">No hay usuarios registrados.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -45,4 +58,56 @@
         </div>
     </div>
 </div>
-<script>if (typeof bindSPALinks === 'function') bindSPALinks();</script>
+
+<!-- Token CSRF oculto para peticiones AJAX -->
+<input type="hidden" id="csrfTokenUsuarios" value="{{ csrf_token }}">
+
+<script>
+(function() {
+    if (typeof bindSPALinks === 'function') bindSPALinks();
+
+    const csrf = document.getElementById('csrfTokenUsuarios').value;
+
+    document.querySelectorAll('.btn-delete-user').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const pk = this.dataset.pk;
+            const name = this.dataset.name;
+
+            Swal.fire({
+                title: '¿Eliminar usuario?',
+                html: `Estás a punto de eliminar a <b style="color:var(--treddy-cyan)">${name}</b>.<br>Esta acción es irreversible.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'swal2-popup',
+                    confirmButton: 'swal2-confirm',
+                    cancelButton: 'swal2-cancel'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    NProgress.start();
+                    const formData = new FormData();
+                    formData.append('csrfmiddlewaretoken', csrf);
+
+                    fetch('/usuario/eliminar/' + pk + '/', {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(r => {
+                        Toast.fire({ icon: 'success', title: 'Usuario eliminado correctamente' });
+                        if (typeof loadSPA === 'function') loadSPA('{% url "usuario_list" %}');
+                    })
+                    .catch(err => {
+                        NProgress.done();
+                        Toast.fire({ icon: 'error', title: 'Error al eliminar el usuario' });
+                    });
+                }
+            });
+        });
+    });
+})();
+</script>

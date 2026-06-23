@@ -147,3 +147,24 @@ def usuario_list(request):
     context = {'usuarios': usuarios}
     template = 'usuarios/partials/usuario_list.html' if is_ajax else 'usuarios/usuario_list.html'
     return render(request, template, context)
+
+
+@login_required
+def usuario_delete(request, pk):
+    from .models import Usuario
+    if getattr(request.user, 'tipo_usuario', '') != 'Administrador':
+        messages.error(request, "Acceso denegado.")
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        usuario = Usuario.objects.filter(pk=pk).first()
+        if not usuario:
+            messages.error(request, "El usuario no existe.")
+        elif usuario.pk == request.user.pk:
+            messages.error(request, "No puedes eliminar tu propia cuenta.")
+        else:
+            nombre = usuario.get_full_name() or usuario.email
+            usuario.delete()
+            messages.success(request, f"Usuario «{nombre}» eliminado correctamente.")
+    
+    return redirect('usuario_list')
