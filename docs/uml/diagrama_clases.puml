@@ -31,6 +31,7 @@ class Producto {
     + imagen: ImageField [nullable]
     + created_at: DateTimeField [auto]
     + updated_at: DateTimeField [auto]
+    + is_deleted: BooleanField [default=False]
     --
     + __str__(): str
 }

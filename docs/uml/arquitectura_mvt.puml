@@ -26,6 +26,10 @@ cloud "Supabase Cloud" as cloud {
 }
 
 node "Servidor Django 6 (Backend)" as django {
+    package "Capa de Lógica de Negocio (Service Layer)" as services {
+        [procesar_checkout()]
+    }
+
     package "Capa de Presentación (Template Layer)" as templates {
         [base.html (SPA Shell)]
         [dashboards/admin.html]
@@ -33,6 +37,7 @@ node "Servidor Django 6 (Backend)" as django {
         [dashboards/vendedor.html]
         [productos/partials/*.html]
         [usuarios/partials/*.html]
+        [factura_pedido.html (xhtml2pdf)]
     }
 
     package "Capa Lógica (View Layer)" as views {
@@ -42,6 +47,7 @@ node "Servidor Django 6 (Backend)" as django {
         [toggle_favorito / favoritos_list]
         [add_to_cart / view_cart / checkout]
         [pedidos_list / historial_list]
+        [download_pedido_pdf]
     }
 
     package "Capa de Datos (Model Layer)" as models {
@@ -67,12 +73,20 @@ node "Servidor Django 6 (Backend)" as django {
     }
 }
 
+node "Configuraciones & Seguridad" as config {
+    [.env (django-environ)]
+    [django-axes (Fuerza Bruta)]
+}
+
 browser <--> views : "HTTP / AJAX (GET, POST)"
 urls --> views : "dispatch()"
+views --> services : "delega"
+services <--> models : "Transacciones"
 views <--> models : "ORM QuerySet"
 views --> templates : "render(context)"
 templates --> browser : "HTML Parcial / Completo"
 forms --> views : "validate()"
 models <--> db : "psycopg2 / dj-database-url"
+config --> django : "aplica seguridad"
 
 @enduml

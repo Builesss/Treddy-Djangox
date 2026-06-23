@@ -32,6 +32,7 @@ entity "productos_producto" as producto {
       imagen : VARCHAR(255)
     * created_at : TIMESTAMPTZ
     * updated_at : TIMESTAMPTZ
+    * is_deleted : BOOLEAN
 }
 
 entity "productos_historialproducto" as historial {

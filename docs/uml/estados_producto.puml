@@ -32,9 +32,10 @@ note right of Inactivo
 end note
 
 note right of Eliminado
-    Se registra snapshot en
-    HistorialProducto antes
-    de eliminación física
+    Borrado Lógico (is_deleted=True)
+    Oculto para todos. Se mantiene
+    la integridad referencial en
+    historiales y pedidos.
 end note
 
 @enduml

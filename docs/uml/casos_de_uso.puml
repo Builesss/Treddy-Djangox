@@ -36,6 +36,7 @@ rectangle "Treddy — Sistema de Gestión" {
         usecase "Ver Carrito de Compras" as UC15
         usecase "Procesar Pago (Checkout)" as UC16
         usecase "Ver Mis Pedidos" as UC17
+        usecase "Exportar Factura a PDF" as UC21
     }
 
     package "Administración de Usuarios" {
@@ -57,6 +58,7 @@ cliente --> UC14
 cliente --> UC15
 cliente --> UC16
 cliente --> UC17
+cliente --> UC21
 
 ' ── Relaciones Vendedor ──
 vendedor --> UC1

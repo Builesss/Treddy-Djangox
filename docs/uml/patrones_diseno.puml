@@ -69,4 +69,21 @@ package "Patrón SPA\n(Single Page Application)" {
     partials --> shell : HTML inyectado en #content-area
 }
 
+package "Patrón Service Layer\n(Lógica de Negocio Centralizada)" {
+    class "Views\n(Controladores)" as ctrl {
+        + checkout(request)
+        + reciben y validan requests
+    }
+    class "services.py\n(Servicios)" as service {
+        + procesar_checkout(user, cart)
+        + manejan transacciones y reglas de negocio
+    }
+    class "Models\n(Datos)" as model {
+        + Pedido.objects.create()
+        + DetallePedido.objects.create()
+    }
+    ctrl --> service : delega lógica compleja >
+    service --> model : interactúa con la BD >
+}
+
 @enduml
