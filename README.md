@@ -230,20 +230,6 @@ CSRF_COOKIE_SECURE = True
 
 ---
 
-## 📋 Bitácoras de Desarrollo
-
-Las bitácoras semanales del proyecto se encuentran en el directorio `bitacoras/`.
-
-| Fecha | Contenido |
-|-------|-----------|
-| 05-05-2026 | Configuración inicial, CustomUser, Bootstrap local, MVT |
-| 12-05-2026 | CRUD de productos, formularios, plantillas SPA |
-| 19-05-2026 | Módulo e-commerce: carrito, favoritos, pedidos |
-| 26-05-2026 | Dashboard vendedor, gráficos, exportar CSV |
-| 02-06-2026 | HistorialProducto (Observer), UML, README, pruebas de integración |
-
----
-
 ## 📊 Diagramas UML (PlantUML)
 
 Los diagramas del sistema se encuentran en `docs/uml/` en formato PlantUML (`.puml`).

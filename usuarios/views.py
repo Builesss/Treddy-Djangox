@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.urls import reverse_lazy
 from django.contrib import messages
-from .forms import CustomLoginForm, CustomRegistroForm, AdminRegistroForm
+from .forms import CustomLoginForm, CustomRegistroForm, AdminRegistroForm, AdminEditarUsuarioForm
 
 
 # ──────────────────────────────────────────────────────────────
@@ -174,6 +174,38 @@ def usuario_delete(request, pk):
             messages.success(request, f"Usuario «{nombre}» eliminado correctamente.")
     
     return redirect('usuario_list')
+
+
+# ──────────────────────────────────────────────────────────────
+# Editar Usuario (Admin)
+# ──────────────────────────────────────────────────────────────
+@login_required
+def usuario_edit(request, pk):
+    from .models import Usuario
+    from django.shortcuts import get_object_or_404
+    if getattr(request.user, 'tipo_usuario', '') != 'Administrador':
+        messages.error(request, "Acceso denegado.")
+        return redirect('dashboard')
+
+    usuario = get_object_or_404(Usuario, pk=pk)
+
+    if request.method == 'POST':
+        form = AdminEditarUsuarioForm(request.POST, instance=usuario)
+        if form.is_valid():
+            form.save()
+            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            if is_ajax:
+                from django.http import JsonResponse
+                return JsonResponse({'status': 'success'})
+            messages.success(request, f"Usuario «{usuario.get_full_name()}» actualizado correctamente.")
+            return redirect('usuario_list')
+    else:
+        form = AdminEditarUsuarioForm(instance=usuario)
+
+    context = {'form': form, 'usuario': usuario}
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    template = 'usuarios/partials/editar_usuario.html' if is_ajax else 'usuarios/editar_usuario.html'
+    return render(request, template, context)
 
 
 # ──────────────────────────────────────────────────────────────

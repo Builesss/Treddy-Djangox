@@ -176,3 +176,62 @@ class EditarPerfilForm(forms.ModelForm):
     class Meta:
         model = Usuario
         fields = ('first_name', 'last_name', 'telefono')
+
+
+# ──────────────────────────────────────────────────────────────
+# Formulario para que el Administrador edite cualquier usuario
+# ──────────────────────────────────────────────────────────────
+class AdminEditarUsuarioForm(forms.ModelForm):
+    first_name = forms.CharField(
+        label="Nombre",
+        max_length=30,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'pattern': r'^[a-zA-ZÁÉÍÓÚáéíóúñÑ\s]{2,30}$',
+            'title': 'Solo letras, mínimo 2 caracteres.',
+        })
+    )
+    last_name = forms.CharField(
+        label="Apellido",
+        max_length=30,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'pattern': r'^[a-zA-ZÁÉÍÓÚáéíóúñÑ\s]{2,30}$',
+            'title': 'Solo letras, mínimo 2 caracteres.',
+        })
+    )
+    telefono = forms.CharField(
+        label="Teléfono",
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'pattern': r'^[\d\s\+\-\(\)]{7,15}$',
+            'placeholder': '+57 300 000 0000',
+        })
+    )
+    tipo_usuario = forms.ChoiceField(
+        label="Rol",
+        choices=Usuario.ROLES,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    estado = forms.ChoiceField(
+        label="Estado",
+        choices=Usuario.ESTADOS,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
+    class Meta:
+        model = Usuario
+        fields = ('first_name', 'last_name', 'telefono', 'tipo_usuario', 'estado')
+
+    def clean_first_name(self):
+        val = self.cleaned_data.get('first_name', '')
+        if not re.match(r'^[a-zA-ZÁÉÍÓÚáéíóúñÑ\s]{2,30}$', val):
+            raise ValidationError(_("El nombre solo puede contener letras."))
+        return val
+
+    def clean_last_name(self):
+        val = self.cleaned_data.get('last_name', '')
+        if not re.match(r'^[a-zA-ZÁÉÍÓÚáéíóúñÑ\s]{2,30}$', val):
+            raise ValidationError(_("El apellido solo puede contener letras."))
+        return val

@@ -1,0 +1,106 @@
+{% load widget_tweaks %}
+<div class="card mx-auto" style="max-width:560px;">
+    <div class="card-header d-flex align-items-center gap-3 py-3">
+        <button class="btn btn-sm btn-light spa-link" data-url="{% url 'usuario_list' %}"
+                style="width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;">
+            ←
+        </button>
+        <h4 class="mb-0 fw-bold">
+            ✏️ Editar Usuario
+        </h4>
+    </div>
+
+    <div class="card-body p-4">
+        <!-- Info del usuario -->
+        <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded" style="background:rgba(0,230,246,0.06);border:1px solid rgba(0,230,246,0.15);">
+            <div style="width:46px;height:46px;border-radius:50%;background:var(--treddy-grad);display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;font-size:1rem;flex-shrink:0;">
+                {{ usuario.first_name|slice:":1"|upper }}{{ usuario.last_name|slice:":1"|upper }}
+            </div>
+            <div>
+                <div class="fw-bold" style="color:var(--treddy-text);">{{ usuario.get_full_name|default:usuario.email }}</div>
+                <div class="small" style="color:var(--treddy-muted);">{{ usuario.email }}</div>
+            </div>
+        </div>
+
+        <form id="form-editar-usuario" method="POST"
+              action="{% url 'usuario_edit' usuario.pk %}">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Nombre</label>
+                    {% render_field form.first_name class="form-control" %}
+                    {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Apellido</label>
+                    {% render_field form.last_name class="form-control" %}
+                    {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Teléfono</label>
+                    {% render_field form.telefono class="form-control" %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Rol</label>
+                    {% render_field form.tipo_usuario class="form-select" %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Estado</label>
+                    {% render_field form.estado class="form-select" %}
+                </div>
+            </div>
+
+            <div class="d-flex gap-3 mt-4">
+                <button type="button" class="btn btn-light flex-fill spa-link" data-url="{% url 'usuario_list' %}">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary flex-fill">
+                    💾 Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function() {
+    if (typeof bindSPALinks === 'function') bindSPALinks();
+
+    const form = document.getElementById('form-editar-usuario');
+    if (!form) return;
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const actionUrl = form.getAttribute('action');
+
+        fetch(actionUrl, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') {
+                if (typeof Toast !== 'undefined') {
+                    Toast.fire({ icon: 'success', title: 'Usuario actualizado correctamente' });
+                }
+                if (typeof loadSPA === 'function') {
+                    loadSPA('{% url "usuario_list" %}');
+                }
+            }
+        })
+        .catch(err => {
+            console.error('Error editando usuario:', err);
+            if (typeof Toast !== 'undefined') {
+                Toast.fire({ icon: 'error', title: 'Error al actualizar el usuario' });
+            }
+        });
+    });
+})();
+</script>

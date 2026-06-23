@@ -36,16 +36,23 @@
                         </td>
                         <td class="text-white">{{ u.date_joined|date:"d M Y" }}</td>
                         <td class="text-end pe-4">
+                            <div class="d-flex gap-2 justify-content-end">
                             {% if u.pk != request.user.pk %}
-                            <button type="button" class="btn btn-outline-danger btn-sm btn-delete-user"
-                                    data-pk="{{ u.pk }}"
-                                    data-name="{{ u.get_full_name|default:u.email }}"
-                                    title="Eliminar usuario">
-                                🗑️
-                            </button>
+                                <button type="button" class="btn btn-outline-info btn-sm spa-link"
+                                        data-url="{% url 'usuario_edit' u.pk %}"
+                                        title="Editar usuario">
+                                    ✏️
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-sm btn-delete-user"
+                                        data-pk="{{ u.pk }}"
+                                        data-name="{{ u.get_full_name|default:u.email }}"
+                                        title="Eliminar usuario">
+                                    🗑️
+                                </button>
                             {% else %}
-                            <span class="badge bg-dark" style="font-size:0.7rem;">Tú</span>
+                                <span class="badge bg-dark" style="font-size:0.7rem;">Tú</span>
                             {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% empty %}
