@@ -84,12 +84,7 @@ def dashboard_view(request):
     else:
         full_tpl    = 'usuarios/dashboards/cliente.html'
         partial_tpl = 'usuarios/dashboards/partials/cliente.html'
-        
-        # Cliente Catálogo Data
-        productos_catalogo = Producto.objects.filter(estado='activo').order_by('-created_at')
-        context.update({
-            'productos_catalogo': productos_catalogo
-        })
+        # (Catálogo eliminado del dashboard para evitar duplicación con la pestaña Productos)
 
     # SPA: devolvemos solo el fragmento si es AJAX
     template = partial_tpl if is_ajax else full_tpl

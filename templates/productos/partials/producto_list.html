@@ -61,6 +61,13 @@
                       style="font-size:0.7rem;border-radius:50px;padding:0.3rem 0.7rem; backdrop-filter:blur(4px); border:1px solid currentColor;">
                     {{ producto.estado|title }}
                 </span>
+                
+                {% if request.user.tipo_usuario == 'Cliente' %}
+                <!-- Botón Favorito -->
+                <button class="btn btn-sm btn-light position-absolute btn-fav" data-pk="{{ producto.pk }}" style="top: 10px; left: 10px; border-radius: 50%; width: 32px; height: 32px; padding: 0; display:flex; align-items:center; justify-content:center; opacity:0.8; transition: opacity 0.2s;">
+                    ❤️
+                </button>
+                {% endif %}
 
                 <h5 class="card-title fw-bold mb-1 pe-5" style="font-size:1.05rem;" title="{{ producto.nombre }}">
                     {{ producto.nombre|truncatechars:25 }}
@@ -99,7 +106,7 @@
             </div>
             {% else %}
             <div class="card-footer p-2 d-flex gap-2 bg-transparent border-0">
-                <button class="btn btn-primary btn-sm flex-fill" style="border-radius:0.5rem;" onclick="Toast.fire({icon:'success', title:'Agregado al carrito (Simulación)'})">
+                <button class="btn btn-primary w-100 btn-sm btn-add-cart" style="border-radius:0.5rem;" data-pk="{{ producto.pk }}">
                     🛒 Añadir al carrito
                 </button>
             </div>
@@ -219,6 +226,61 @@ if (typeof bindSPALinks === 'function') bindSPALinks();
                         NProgress.done();
                         Toast.fire({ icon: 'error', title: 'Error al eliminar' });
                     });
+                }
+            });
+        });
+    });
+})();
+
+// ── LÓGICA DE CARRITO Y FAVORITOS PARA CLIENTES ──
+(function() {
+    const csrfEl = document.getElementById('csrfToken');
+    if (!csrfEl) return;
+    const csrf = csrfEl.value;
+    
+    // Add to cart
+    document.querySelectorAll('.btn-add-cart').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const pk = this.dataset.pk;
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', csrf);
+            
+            fetch('/carrito/add/' + pk + '/', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    Toast.fire({icon:'success', title:'Producto añadido al carrito (' + data.cart_count + ' items)'});
+                }
+            });
+        });
+    });
+
+    // Toggle Favorito
+    document.querySelectorAll('.btn-fav').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const pk = this.dataset.pk;
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', csrf);
+            
+            fetch('/favorito/toggle/' + pk + '/', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'added') {
+                    this.style.opacity = '1';
+                    Toast.fire({icon:'success', title:'Agregado a favoritos'});
+                } else if (data.status === 'removed') {
+                    this.style.opacity = '0.5';
+                    Toast.fire({icon:'info', title:'Eliminado de favoritos'});
                 }
             });
         });
