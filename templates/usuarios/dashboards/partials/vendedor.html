@@ -42,6 +42,18 @@
     </div>
 </div>
 
+<!-- ── Gráfico de Categorías (Chart.js) ─────────────────────── -->
+<div class="row g-4 mb-5">
+    <div class="col-md-8 mx-auto">
+        <div class="card p-4">
+            <h5 class="fw-bold mb-4" style="font-size:1.1rem; color:var(--treddy-text);">Productos por Categoría</h5>
+            <div style="position: relative; height:280px; width:100%;">
+                <canvas id="vendedorCatChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- ── Acciones rápidas ──────────────────────────────────────── -->
 <h5 class="fw-semibold mb-3" style="color:var(--treddy-muted);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.08em;">
     Acciones Rápidas
@@ -70,4 +82,49 @@
         </div>
     </div>
 </div>
-<script>if (typeof bindSPALinks === 'function') bindSPALinks();</script>
+
+<script>
+(function() {
+    if (typeof bindSPALinks === 'function') bindSPALinks();
+
+    function initVendedorChart() {
+        const canvas = document.getElementById('vendedorCatChart');
+        if (!canvas) return;
+        if (window.vendedorCatChartObj) window.vendedorCatChartObj.destroy();
+
+        const labels = JSON.parse('{{ chart_cat_labels|escapejs }}');
+        const data = JSON.parse('{{ chart_cat_data|escapejs }}');
+        const colors = ['#00E6F6', '#3B82F6', '#6366F1', '#8B5CF6', '#EC4899', '#F59E0B', '#22C55E', '#EF4444'];
+
+        window.vendedorCatChartObj = new Chart(canvas, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Productos',
+                    data: data,
+                    backgroundColor: colors.slice(0, labels.length),
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8', stepSize: 1 } },
+                    x: { grid: { display: false }, ticks: { color: '#94A3B8' } }
+                }
+            }
+        });
+    }
+
+    if (typeof Chart !== 'undefined') {
+        initVendedorChart();
+    } else {
+        setTimeout(initVendedorChart, 500);
+    }
+})();
+</script>
