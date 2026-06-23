@@ -49,7 +49,10 @@
 <!-- ── Info de cuenta ─────────────────────────────────────────── -->
 <div class="card p-1">
     <div class="card-body">
-        <h5 class="fw-bold mb-3" style="color:var(--treddy-cyan);">🔐 Información de Cuenta</h5>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0" style="color:var(--treddy-cyan);">🔐 Información de Cuenta</h5>
+            <button class="btn btn-outline-primary btn-sm spa-link" style="border-radius:50px;" data-url="{% url 'editar_perfil' %}">✏️ Editar</button>
+        </div>
         <div class="row g-2">
             <div class="col-md-4">
                 <div style="background:var(--treddy-panel);border:1px solid var(--treddy-border);border-radius:0.6rem;padding:1rem;">

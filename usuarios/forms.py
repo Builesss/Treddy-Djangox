@@ -148,3 +148,37 @@ class AdminRegistroForm(CustomRegistroForm):
         if commit:
             user.save()
         return user
+
+
+# ──────────────────────────────────────────────────────────────
+# Formulario para Editar Perfil (Cliente/Vendedor/Admin)
+# ──────────────────────────────────────────────────────────────
+class EditarPerfilForm(forms.ModelForm):
+    first_name = forms.CharField(
+        label="Nombre",
+        max_length=30,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'pattern': r'^[a-zA-ZÁÉÍÓÚáéíóúñÑ\s]{2,30}$',
+        })
+    )
+    last_name = forms.CharField(
+        label="Apellido",
+        max_length=30,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'pattern': r'^[a-zA-ZÁÉÍÓÚáéíóúñÑ\s]{2,30}$',
+        })
+    )
+    telefono = forms.CharField(
+        label="Teléfono",
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'pattern': r'^[\d\s\+\-\(\)]{7,15}$',
+        })
+    )
+
+    class Meta:
+        model = Usuario
+        fields = ('first_name', 'last_name', 'telefono')

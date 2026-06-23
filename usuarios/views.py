@@ -168,3 +168,23 @@ def usuario_delete(request, pk):
             messages.success(request, f"Usuario «{nombre}» eliminado correctamente.")
     
     return redirect('usuario_list')
+
+
+# ──────────────────────────────────────────────────────────────
+# Edición de Perfil
+# ──────────────────────────────────────────────────────────────
+@login_required
+def editar_perfil(request):
+    from .forms import EditarPerfilForm
+    if request.method == 'POST':
+        form = EditarPerfilForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Perfil actualizado correctamente.")
+            return redirect('dashboard')
+    else:
+        form = EditarPerfilForm(instance=request.user)
+        
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    template = 'usuarios/partials/editar_perfil.html' if is_ajax else 'usuarios/editar_perfil.html'
+    return render(request, template, {'form': form})
