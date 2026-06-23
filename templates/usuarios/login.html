@@ -20,18 +20,27 @@
         <span class="login-brand">⚡ Treddy</span>
         <p class="login-subtitle">Plataforma de Gestión Inteligente</p>
 
-        <!-- Flash messages -->
+        <!-- Alertas de inicio de sesión -->
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-danger py-2 mb-3">{{ message }}</div>
+                <div class="alert alert-{{ message.tags|default:'danger' }} py-2 mb-3 rounded-3" role="alert">
+                    {{ message }}
+                </div>
             {% endfor %}
         {% endif %}
 
-        <!-- Form errors (Capa 1 y 2 de seguridad) -->
+        <!-- Errores del formulario -->
         {% if form.errors %}
-            <div class="alert alert-danger py-2 mb-3">
-                Credenciales incorrectas o caracteres no permitidos.
-            </div>
+            {% if form.username.errors %}
+                <div class="alert alert-warning py-2 mb-3 rounded-3" role="alert">
+                    ⚠️ {{ form.username.errors|join:", " }}
+                </div>
+            {% endif %}
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger py-2 mb-3 rounded-3" role="alert">
+                    🔐 Correo o contraseña incorrectos. Por favor, intenta de nuevo.
+                </div>
+            {% endif %}
         {% endif %}
 
         <form method="POST" action="{% url 'login' %}" novalidate>

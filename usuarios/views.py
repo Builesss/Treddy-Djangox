@@ -23,9 +23,6 @@ class CustomLoginView(LoginView):
             return reverse_lazy('login')
         return reverse_lazy('dashboard')
 
-    def form_invalid(self, form):
-        messages.error(self.request, "Credenciales incorrectas o caracteres no permitidos.")
-        return super().form_invalid(form)
 
 
 # ──────────────────────────────────────────────────────────────

@@ -40,12 +40,6 @@ class CustomLoginForm(AuthenticationForm):
             raise ValidationError(_("El correo contiene caracteres no permitidos."))
         return username
 
-    def clean_password(self):
-        password = self.cleaned_data.get('password', '')
-        if re.search(r"['\";\\]", password):
-            raise ValidationError(_("La contraseña contiene caracteres no permitidos."))
-        return password
-
 
 # ──────────────────────────────────────────────────────────────
 # Formulario de Registro
