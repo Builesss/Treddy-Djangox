@@ -1,52 +1,138 @@
-# Treddy - Proyecto Final SENA
+# ⚡ Treddy — Plataforma de Gestión de Inventario
 
-Treddy es una plataforma web desarrollada en Django, orientada a la gestión de inventario y comercio con diferentes roles de usuario (Administrador, Vendedor, Cliente). El proyecto se desarrolló cumpliendo estrictamente con los lineamientos del SENA y aplicando principios SOLID, DRY y arquitectura por capas (MVT).
+Treddy es una aplicación web full-stack de gestión de inventario y e-commerce construida con **Django 6**, con arquitectura **MVT (Model-View-Template)**, base de datos en la nube con **Supabase (PostgreSQL)** y una interfaz SPA (Single Page Application) dinámica.
 
-## 🚀 Módulos Implementados
+---
 
-1. **Gestión de Usuarios y Roles:** Autenticación personalizada (`CustomUser`) con roles definidos y tableros (Dashboards) dinámicos según los permisos.
-2. **Single Page Application (SPA):** Navegación sin recargas utilizando `Fetch API`, `NProgress` y el API `History` de HTML5.
-3. **CRUD de Productos:** Sistema completo de gestión de inventarios (Crear, Leer, Actualizar, Eliminar).
-4. **Historial y Auditoría:** Registro automático de las acciones realizadas sobre los productos por parte de administradores y vendedores.
-5. **Seguridad Avanzada (4 Capas):**
-   - **Base de Datos:** Validadores `Regex`, `MinLength` y `MinValue` directamente en los Modelos.
-   - **Servidor:** Métodos `clean()` en Django Forms para sanitización de datos.
-   - **HTML5:** Atributos `pattern`, `min`, `maxlength` requeridos por el navegador.
-   - **JavaScript:** Intercepción dinámica en el Frontend con SweetAlert2 antes del envío de peticiones.
+## 🚀 Características Principales
+
+### 🛡️ Administrador
+- Dashboard con estadísticas en tiempo real (usuarios, productos, estados)
+- Gestión completa de productos (CRUD)
+- Historial de auditoría de productos (creación, actualización, eliminación)
+- Gestión de usuarios: visualización y eliminación con confirmación
+- Exportación de inventario a CSV
+- Registro de nuevos usuarios con asignación de roles
+
+### 🛒 Cliente
+- Catálogo de productos con búsqueda y filtros
+- Lista de favoritos (toggle con corazón interactivo)
+- Carrito de compras con sesión
+- Proceso de checkout y generación de pedidos
+- Historial de pedidos con detalle expandible
+- Edición de perfil
+
+### 🏪 Vendedor
+- Gestión de productos (CRUD completo)
+- Historial de auditoría propio
+- Exportación a CSV
+
+---
+
+## 🏗️ Arquitectura
+
+```
+treddy-django/
+├── treddy_project/       # Configuración principal del proyecto
+│   ├── settings.py       # Settings con Supabase (dj-database-url)
+│   └── urls.py
+├── usuarios/             # App de usuarios y autenticación
+│   ├── models.py         # Modelo Usuario personalizado
+│   ├── views.py          # Login, Dashboard (patrón Strategy), perfil
+│   └── forms.py          # Formularios de login, registro, perfil
+├── productos/            # App de inventario y e-commerce
+│   ├── models.py         # Producto, HistorialProducto, Favorito, Pedido
+│   ├── views.py          # CRUD productos + carrito, favoritos, pedidos
+│   └── urls.py
+├── templates/            # Plantillas HTML (Django Template Language)
+│   ├── base.html         # Layout SPA principal con sidebar y particles
+│   ├── usuarios/         # Login, Registro, Dashboards por rol
+│   └── productos/        # Catálogo, formularios, carrito, pedidos
+├── static/               # CSS, JS y librerías de terceros
+│   ├── css/custom.css    # Sistema de diseño Treddy
+│   └── js/
+├── bitacoras/            # Bitácoras de desarrollo del proyecto
+└── docs/uml/             # Diagramas UML del sistema
+```
+
+---
+
+## 🛠️ Stack Tecnológico
+
+| Capa | Tecnología |
+|------|-----------|
+| Backend | Django 6.0.6 |
+| Base de Datos | Supabase (PostgreSQL 17) |
+| ORM Connector | psycopg2-binary + dj-database-url |
+| Frontend | Bootstrap 5 + CSS Variables + JS Vanilla |
+| Alertas UI | SweetAlert2 |
+| Barra de Progreso | NProgress |
+| Autenticación | Django Auth (modelo personalizado) |
+
+---
+
+## ⚙️ Instalación y Configuración Local
+
+### 1. Clonar el repositorio
+```bash
+git clone <repo-url>
+cd Treddy-Django
+```
+
+### 2. Crear y activar el entorno virtual
+```bash
+python -m venv venv
+# Windows
+.\venv\Scripts\activate
+# Linux/Mac
+source venv/bin/activate
+```
+
+### 3. Instalar dependencias
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Configurar variables de entorno
+Edita `treddy_project/settings.py` y asegúrate de que el `DATABASE_URL` apunte a tu instancia de Supabase.
+
+### 5. Aplicar migraciones
+```bash
+python manage.py migrate
+```
+
+### 6. Iniciar el servidor de desarrollo
+```bash
+python manage.py runserver
+```
+
+---
+
+## 👤 Roles de Usuario
+
+| Rol | Acceso |
+|-----|--------|
+| `Administrador` | Control total: usuarios, productos, historial, reportes |
+| `Vendedor` | Gestión de productos, historial propio, exportar CSV |
+| `Cliente` | Catálogo, favoritos, carrito, pedidos, perfil |
+
+---
 
 ## 📐 Patrones de Diseño Aplicados
 
-Para garantizar escalabilidad, mantenibilidad y un código limpio profesional, se han documentado y aplicado los siguientes patrones de diseño de software:
+- **Strategy Pattern** — Delegación de dashboard según el rol del usuario
+- **Observer Pattern** — Registro automático de auditoría en `HistorialProducto`
+- **SPA (Single Page Application)** — Navegación sin recargas via AJAX + partials
+- **MVT (Model-View-Template)** — Arquitectura base de Django
 
-1. **MVT (Model-View-Template):**
-   - Es una variante arquitectónica del MVC utilizada por Django. Separa la lógica de acceso a datos (Models), la presentación (Templates) y la lógica de negocio (Views).
+---
 
-2. **Observer (Observador):**
-   - Se utiliza para la creación del **Historial de Productos**. Cada vez que ocurre un evento en el CRUD (ej. una actualización o eliminación), se "notifica" a la capa de registro (o usando Signals en implementaciones más grandes) para insertar un registro en la tabla de auditoría (`HistorialProducto`) de manera automática.
+## 📋 Bitácoras de Desarrollo
 
-3. **Decorator (Decorador):**
-   - Implementado extensamente para proteger las rutas. Envolviendo las funciones de las vistas con `@login_required`, modificamos el comportamiento de acceso a la vista dinámicamente sin alterar el código de negocio interno.
+Las bitácoras semanales del proyecto se encuentran en el directorio `bitacoras/`.
 
-4. **Singleton (Instancia Única):**
-   - Se aplica mediante el uso del ORM de Django (Connection Handler), asegurando que las conexiones a la base de datos se mantengan bajo un mismo pool o instancia controlada durante el ciclo de vida de cada petición.
+---
 
-5. **Factory Method (Método Fábrica):**
-   - Se evidencia en el uso de los formularios y serializadores en las vistas, delegando en las clases genéricas de Django (`UserCreationForm` modificado) la responsabilidad de "crear" los diferentes tipos de objetos Usuario.
+## 📊 Diagramas UML
 
-## 🛠️ Tecnologías Utilizadas
-
-- **Backend:** Python 3, Django 6
-- **Frontend:** HTML5, CSS3 Nativo, JavaScript Vanilla
-- **Estilos:** Bootstrap 5 (Local, sin CDNs)
-- **Librerías UX:** SweetAlert2, NProgress (Ambas instaladas localmente para uso offline)
-- **Base de datos:** SQLite3
-
-## 📦 Instalación Local
-
-1. Clonar el repositorio.
-2. Crear un entorno virtual: `python -m venv venv`
-3. Activar el entorno virtual e instalar los requerimientos: `pip install -r requirements.txt` (si existe) o las dependencias de Django.
-4. Aplicar las migraciones: `python manage.py migrate`
-5. Ejecutar el servidor de pruebas: `python manage.py runserver`
-
-*Nota: La aplicación contiene todas las librerías estáticas (Bootstrap, NProgress, SweetAlert2) empaquetadas localmente, garantizando su funcionamiento sin conexión a internet según lineamientos de evaluación.*
+Los diagramas del sistema (arquitectura, casos de uso, clases, modelo de datos) se encuentran en `docs/uml/` en formato PlantUML (`.puml`).

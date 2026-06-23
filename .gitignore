@@ -1,0 +1,45 @@
+# ─── Python ───────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# ─── Django ───────────────────────────────────────────────────
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+datadump.json
+media/
+
+# ─── Entorno Virtual ──────────────────────────────────────────
+venv/
+env/
+.env
+.venv/
+
+# ─── Distribución / Empaquetado ───────────────────────────────
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ─── IDEs ─────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.iml
+
+# ─── Sistema Operativo ────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Cobertura de Pruebas ─────────────────────────────────────
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# ─── Archivos Estáticos Recolectados (producción) ─────────────
+staticfiles/
