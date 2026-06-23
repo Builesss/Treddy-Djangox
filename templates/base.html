@@ -189,64 +189,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-<!-- ════ Partículas (AnimatedBackground) ════ -->
-<script>
-(function() {
-    const canvas = document.getElementById('particles-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let raf;
-
-    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
-    resize();
-    window.addEventListener('resize', resize);
-
-    class Particle {
-        constructor() { this.reset(); }
-        reset() {
-            this.x  = Math.random() * canvas.width;
-            this.y  = Math.random() * canvas.height;
-            this.vx = (Math.random() - 0.5) * 0.3;
-            this.vy = (Math.random() - 0.5) * 0.3;
-            this.r  = Math.random() * 2 + 1.5;
-        }
-        update() {
-            this.x += this.vx; this.y += this.vy;
-            if (this.x < 0 || this.x > canvas.width)  this.vx *= -1;
-            if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
-        }
-        draw() {
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-            ctx.fillStyle = '#00E6F6';
-            ctx.fill();
-        }
-    }
-
-    const N = 100, pts = Array.from({length: N}, () => new Particle());
-    const animate = () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        pts.forEach(p => { p.update(); p.draw(); });
-        for (let i = 0; i < N; i++) {
-            for (let j = i + 1; j < N; j++) {
-                const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
-                const d = Math.sqrt(dx*dx + dy*dy);
-                if (d < 110) {
-                    ctx.beginPath();
-                    ctx.strokeStyle = `rgba(0,230,246,${0.12 * (1 - d/110)})`;
-                    ctx.lineWidth = 1;
-                    ctx.moveTo(pts[i].x, pts[i].y);
-                    ctx.lineTo(pts[j].x, pts[j].y);
-                    ctx.stroke();
-                }
-            }
-        }
-        raf = requestAnimationFrame(animate);
-    };
-    animate();
-})();
-</script>
-
 <!-- ════ Router SPA Global + NProgress ════ -->
 <script>
 NProgress.configure({ showSpinner: false, speed: 400, minimum: 0.1 });
@@ -274,24 +216,23 @@ function loadSPA(url) {
             `;
             container.style.opacity = '0.7';
 
-            setTimeout(() => {
-                container.innerHTML = html;
-                
-                // Ejecutar scripts insertados manualmente
-                const scripts = container.querySelectorAll('script');
-                scripts.forEach(oldScript => {
-                    const newScript = document.createElement('script');
-                    Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-                    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
-                    oldScript.parentNode.replaceChild(newScript, oldScript);
-                });
+            // Remover setTimeout artificial para acelerar la carga
+            container.innerHTML = html;
+            
+            // Ejecutar scripts insertados manualmente
+            const scripts = container.querySelectorAll('script');
+            scripts.forEach(oldScript => {
+                const newScript = document.createElement('script');
+                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+            });
 
-                window.history.pushState({ url }, '', url);
-                bindSPALinks();
-                container.style.transition = 'opacity 0.3s ease';
-                container.style.opacity = '1';
-                NProgress.done(); // Finalizar barra de carga
-            }, 250);
+            window.history.pushState({ url }, '', url);
+            bindSPALinks();
+            container.style.transition = 'opacity 0.2s ease';
+            container.style.opacity = '1';
+            NProgress.done(); // Finalizar barra de carga
         })
         .catch(err => {
             console.error('SPA error:', err);
@@ -320,6 +261,33 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('popstate', e => {
     if (e.state && e.state.url) {
         loadSPA(e.state.url);
+    }
+});
+</script>
+
+<!-- ════ Global Button Spinner ════ -->
+<script>
+document.addEventListener('submit', function(e) {
+    const form = e.target;
+    // Evitar aplicarlo a formularios que se envían por AJAX o tienen comportamientos custom
+    if (form.hasAttribute('data-no-spinner')) return;
+
+    const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+    if (submitBtn && !submitBtn.disabled) {
+        // Bloquear doble submit y añadir spinner
+        submitBtn.disabled = true;
+        
+        const isInput = submitBtn.tagName.toLowerCase() === 'input';
+        const originalText = isInput ? submitBtn.value : submitBtn.innerHTML;
+        
+        if (isInput) {
+            submitBtn.value = "Cargando...";
+        } else {
+            submitBtn.innerHTML = `
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                ${originalText}
+            `;
+        }
     }
 });
 </script>

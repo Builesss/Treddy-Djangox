@@ -247,6 +247,8 @@ def pedidos_list(request):
     pedidos = Pedido.objects.filter(usuario=request.user).order_by('-created_at')
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return render(request, 'productos/partials/pedidos_list.html', {'pedidos': pedidos})
+    return render(request, 'productos/pedidos_list.html', {'pedidos': pedidos})
+
 from .utils import render_to_pdf
 
 @login_required

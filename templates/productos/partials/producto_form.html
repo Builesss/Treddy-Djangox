@@ -63,10 +63,35 @@
                                 {% endif %}
                             </div>
                         </div>
-                        <div class="col-md-8">
-                            {% render_field form.imagen class="form-control" id="imageInput" accept="image/*" %}
-                            <div class="form-text mt-2" style="color:var(--treddy-muted);font-size:0.8rem;">
-                                Sube una imagen en formato JPG, PNG o WebP. El tamaño recomendado es de 800×800px para evitar distorsión en la tienda.
+                        <div class="col-md-8 d-flex flex-column justify-content-center gap-2">
+                            <!-- Input nativo oculto -->
+                            <input type="file" id="imageInput" name="imagen" accept="image/*" style="display:none;">
+                            {% if producto and producto.imagen %}
+                                <!-- Checkbox oculto para limpiar la imagen, activado por el botón rojo -->
+                                <input type="checkbox" name="imagen-clear" id="imagen-clear-id" style="display:none;">
+                                <div class="d-flex align-items-center gap-2 mb-1" style="font-size:0.82rem;color:var(--treddy-muted);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31z"/></svg>
+                                    Imagen actual guardada
+                                    <button type="button" id="clearImageBtn"
+                                            class="btn btn-sm btn-outline-danger ms-auto d-flex align-items-center gap-1"
+                                            style="font-size:0.75rem;padding:2px 8px;"
+                                            onclick="document.getElementById('imagen-clear-id').checked=true; this.closest('.d-flex').remove();">
+                                        🗑 Eliminar imagen
+                                    </button>
+                                </div>
+                            {% endif %}
+                            <button type="button" id="imagePickerBtn"
+                                    onclick="document.getElementById('imageInput').click()"
+                                    class="btn btn-outline-info d-flex align-items-center gap-2 fw-semibold">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                                    <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1h12z"/>
+                                </svg>
+                                Seleccionar imagen
+                            </button>
+                            <span id="imageFileName" style="color:var(--treddy-muted);font-size:0.82rem;">Ningún archivo seleccionado</span>
+                            <div class="form-text" style="color:var(--treddy-muted);font-size:0.78rem;">
+                                Formatos: JPG, PNG o WebP. Tamaño recomendado: 800×800px.
                             </div>
                         </div>
                     </div>
@@ -162,6 +187,9 @@
                     if (imagePreviewIcon) imagePreviewIcon.style.display = 'none';
                 }
                 reader.readAsDataURL(file);
+                // Mostrar nombre del archivo en el label
+                const nameLabel = document.getElementById('imageFileName');
+                if (nameLabel) nameLabel.textContent = file.name;
             }
         });
     }

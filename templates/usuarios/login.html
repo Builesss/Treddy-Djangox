@@ -87,6 +87,15 @@
     const go=()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); pts.forEach(p=>{p.update();p.draw();}); for(let i=0;i<N;i++) for(let j=i+1;j<N;j++){const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy); if(d<100){ctx.beginPath();ctx.strokeStyle=`rgba(0,230,246,${0.1*(1-d/100)})`;ctx.lineWidth=1;ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.stroke();}} requestAnimationFrame(go); };
     go();
 })();
+
+document.addEventListener('submit', function(e) {
+    const btn = e.target.querySelector('button[type="submit"]');
+    if (btn && !btn.disabled) {
+        btn.disabled = true;
+        const text = btn.innerHTML;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${text}`;
+    }
+});
 </script>
 </body>
 </html>
