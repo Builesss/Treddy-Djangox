@@ -84,38 +84,20 @@
             body: formData,
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
-        .then(r => {
-            if (r.redirected) {
-                if (typeof loadSPA === 'function') {
-                    loadSPA(r.url);
-                } else {
-                    window.location.href = r.url;
-                }
-                return null;
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Mostrar Toast de éxito y limpiar el formulario
+                Toast.fire({ icon: 'success', title: data.message });
+                form.reset();
+            } else {
+                // Si el servidor devuelve errores de validación, recargar el partial
+                Toast.fire({ icon: 'error', title: 'Por favor corrige los errores del formulario.' });
             }
-            return r.text();
-        })
-        .then(html => {
-            if (html === null) return;
-            document.getElementById('spa-container').innerHTML = html;
-            
-            // Ejecutar scripts insertados manualmente
-            const container = document.getElementById('spa-container');
-            const scripts = container.querySelectorAll('script');
-            scripts.forEach(oldScript => {
-                const newScript = document.createElement('script');
-                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-                newScript.appendChild(document.createTextNode(oldScript.innerHTML));
-                oldScript.parentNode.replaceChild(newScript, oldScript);
-            });
-
-            if (typeof bindSPALinks === 'function') bindSPALinks();
         })
         .catch(err => {
             console.error('Error guardando usuario:', err);
-            if (typeof Toast !== 'undefined') {
-                Toast.fire({ icon: 'error', title: 'Error al procesar la solicitud' });
-            }
+            Toast.fire({ icon: 'error', title: 'Error al procesar la solicitud' });
         });
     });
 })();

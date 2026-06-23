@@ -100,10 +100,11 @@ def registro_view(request):
         if form.is_valid():
             form.save()
             if is_admin:
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    from django.http import JsonResponse
+                    return JsonResponse({'status': 'success', 'message': f"✅ Usuario creado exitosamente."})
                 messages.success(request, "Usuario creado exitosamente desde la administración.")
-                # Cuando estamos en SPA (o normal), podemos redirigir al dashboard para ver los cambios o dejar que limpie el form.
-                # Redireccionaremos a la misma vista de registro para poder crear otro o salir.
-                return redirect('registro')
+                return redirect('dashboard')
             else:
                 messages.success(request, "¡Cuenta creada exitosamente! Ya puedes iniciar sesión.")
                 return redirect('login')
