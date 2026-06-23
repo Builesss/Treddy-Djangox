@@ -124,3 +124,27 @@ class CustomRegistroForm(UserCreationForm):
         if commit:
             user.save()
         return user
+
+# ──────────────────────────────────────────────────────────────
+# Formulario de Registro para Administradores
+# ──────────────────────────────────────────────────────────────
+class AdminRegistroForm(CustomRegistroForm):
+    tipo_usuario = forms.ChoiceField(
+        label="Rol del Usuario",
+        choices=Usuario.ROLES,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
+    class Meta(CustomRegistroForm.Meta):
+        fields = ('first_name', 'last_name', 'email', 'telefono', 'tipo_usuario', 'password1', 'password2')
+
+    def save(self, commit=True):
+        # Evitar llamar al save() de CustomRegistroForm que fuerza 'Cliente'
+        user = super(CustomRegistroForm, self).save(commit=False)
+        user.email = self.cleaned_data['email']
+        user.username = self.cleaned_data['email']
+        user.tipo_usuario = self.cleaned_data['tipo_usuario']
+        user.estado = 'Activo'
+        if commit:
+            user.save()
+        return user

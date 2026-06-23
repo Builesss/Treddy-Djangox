@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.urls import reverse_lazy
 from django.contrib import messages
-from .forms import CustomLoginForm, CustomRegistroForm
+from .forms import CustomLoginForm, CustomRegistroForm, AdminRegistroForm
 
 
 # ──────────────────────────────────────────────────────────────
@@ -68,18 +68,33 @@ def dashboard_view(request):
 
 
 # ──────────────────────────────────────────────────────────────
-# Registro — Abierto, rol Cliente por defecto
+# Registro — Abierto (Público) y Privado (Administrador)
 # ──────────────────────────────────────────────────────────────
 def registro_view(request):
+    is_admin = request.user.is_authenticated and getattr(request.user, 'tipo_usuario', '') == 'Administrador'
+    FormClass = AdminRegistroForm if is_admin else CustomRegistroForm
+    
     if request.method == 'POST':
-        form = CustomRegistroForm(request.POST)
+        form = FormClass(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "¡Cuenta creada exitosamente! Ya puedes iniciar sesión.")
-            return redirect('login')
+            if is_admin:
+                messages.success(request, "Usuario creado exitosamente desde la administración.")
+                # Cuando estamos en SPA (o normal), podemos redirigir al dashboard para ver los cambios o dejar que limpie el form.
+                # Redireccionaremos a la misma vista de registro para poder crear otro o salir.
+                return redirect('registro')
+            else:
+                messages.success(request, "¡Cuenta creada exitosamente! Ya puedes iniciar sesión.")
+                return redirect('login')
     else:
-        form = CustomRegistroForm()
-    return render(request, 'usuarios/registro.html', {'form': form})
+        form = FormClass()
+        
+    if is_admin:
+        template = 'usuarios/partials/admin_registro.html' if request.headers.get('X-Requested-With') == 'XMLHttpRequest' else 'usuarios/admin_registro.html'
+    else:
+        template = 'usuarios/registro.html'
+        
+    return render(request, template, {'form': form})
 
 
 def custom_logout(request):
