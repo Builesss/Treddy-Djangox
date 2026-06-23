@@ -34,7 +34,7 @@
                                 {{ u.estado }}
                             </span>
                         </td>
-                        <td>{{ u.date_joined|date:"d M Y" }}</td>
+                        <td class="text-white">{{ u.date_joined|date:"d M Y" }}</td>
                         <td class="text-end pe-4">
                             {% if u.pk != request.user.pk %}
                             <button type="button" class="btn btn-outline-danger btn-sm btn-delete-user"
