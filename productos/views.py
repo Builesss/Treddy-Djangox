@@ -79,3 +79,41 @@ def producto_delete(request, pk):
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return render(request, 'productos/partials/producto_confirm_delete.html', {'producto': producto})
     return render(request, 'productos/producto_confirm_delete.html', {'producto': producto})
+
+@login_required
+def historial_list(request):
+    if getattr(request.user, 'tipo_usuario', '') != 'Administrador':
+        return redirect('productos_list')
+        
+    historial = HistorialProducto.objects.all().order_by('-fecha')
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render(request, 'productos/partials/historial_list.html', {'historial': historial})
+    return render(request, 'productos/historial_list.html', {'historial': historial})
+
+@login_required
+def exportar_csv(request):
+    import csv
+    from django.http import HttpResponse
+    
+    response = HttpResponse(
+        content_type='text/csv',
+        headers={'Content-Disposition': 'attachment; filename="inventario_treddy.csv"'},
+    )
+    
+    writer = csv.writer(response)
+    writer.writerow(['ID', 'Nombre', 'Categoria', 'Precio Base', 'Stock', 'Estado', 'Fecha de Creacion'])
+    
+    productos = Producto.objects.all().order_by('-created_at')
+    for p in productos:
+        writer.writerow([
+            p.id, 
+            p.nombre, 
+            p.categoria, 
+            p.precio_base, 
+            p.stock, 
+            p.estado, 
+            p.created_at.strftime('%Y-%m-%d %H:%M')
+        ])
+        
+    return response

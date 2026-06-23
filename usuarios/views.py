@@ -33,6 +33,8 @@ class CustomLoginView(LoginView):
 # ──────────────────────────────────────────────────────────────
 @login_required
 def dashboard_view(request):
+    import json
+    from django.db.models import Count
     from productos.models import Producto
     from .models import Usuario
 
@@ -43,24 +45,51 @@ def dashboard_view(request):
     if user.tipo_usuario == 'Administrador':
         full_tpl    = 'usuarios/dashboards/admin.html'
         partial_tpl = 'usuarios/dashboards/partials/admin.html'
+        
+        # Chart Data
+        roles_qs = Usuario.objects.values('tipo_usuario').annotate(count=Count('tipo_usuario'))
+        roles_labels = [item['tipo_usuario'] for item in roles_qs]
+        roles_data = [item['count'] for item in roles_qs]
+        
+        estados_qs = Producto.objects.values('estado').annotate(count=Count('estado'))
+        estados_labels = [item['estado'] for item in estados_qs]
+        estados_data = [item['count'] for item in estados_qs]
+
         context.update({
             'total_usuarios':       Usuario.objects.count(),
             'usuarios_activos':     Usuario.objects.filter(estado='Activo').count(),
             'total_productos':      Producto.objects.filter(estado='activo').count(),
             'productos_bajo_stock': Producto.objects.filter(stock__lt=5).count(),
+            'chart_roles_labels':   json.dumps(roles_labels),
+            'chart_roles_data':     json.dumps(roles_data),
+            'chart_estados_labels': json.dumps(estados_labels),
+            'chart_estados_data':   json.dumps(estados_data),
         })
     elif user.tipo_usuario == 'Vendedor':
         full_tpl    = 'usuarios/dashboards/vendedor.html'
         partial_tpl = 'usuarios/dashboards/partials/vendedor.html'
+        
+        cat_qs = Producto.objects.values('categoria').annotate(count=Count('categoria'))
+        cat_labels = [item['categoria'] for item in cat_qs]
+        cat_data = [item['count'] for item in cat_qs]
+
         context.update({
             'total_productos':      Producto.objects.count(),
             'productos_activos':    Producto.objects.filter(estado='activo').count(),
             'productos_bajo_stock': Producto.objects.filter(stock__lt=5).count(),
             'categorias':           Producto.objects.values('categoria').distinct().count(),
+            'chart_cat_labels':     json.dumps(cat_labels),
+            'chart_cat_data':       json.dumps(cat_data),
         })
     else:
         full_tpl    = 'usuarios/dashboards/cliente.html'
         partial_tpl = 'usuarios/dashboards/partials/cliente.html'
+        
+        # Cliente Catálogo Data
+        productos_catalogo = Producto.objects.filter(estado='activo').order_by('-created_at')
+        context.update({
+            'productos_catalogo': productos_catalogo
+        })
 
     # SPA: devolvemos solo el fragmento si es AJAX
     template = partial_tpl if is_ajax else full_tpl
@@ -100,3 +129,21 @@ def registro_view(request):
 def custom_logout(request):
     logout(request)
     return redirect('login')
+
+
+# ──────────────────────────────────────────────────────────────
+# Gestión de Usuarios (Admin)
+# ──────────────────────────────────────────────────────────────
+@login_required
+def usuario_list(request):
+    from .models import Usuario
+    if getattr(request.user, 'tipo_usuario', '') != 'Administrador':
+        messages.error(request, "Acceso denegado.")
+        return redirect('dashboard')
+        
+    usuarios = Usuario.objects.all().order_by('-date_joined')
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    
+    context = {'usuarios': usuarios}
+    template = 'usuarios/partials/usuario_list.html' if is_ajax else 'usuarios/usuario_list.html'
+    return render(request, template, context)

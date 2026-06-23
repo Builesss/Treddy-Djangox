@@ -42,43 +42,153 @@
     </div>
 </div>
 
+<!-- ── Gráficos Interactivos (Chart.js) ───────────────────────── -->
+<div class="row g-4 mb-5">
+    <div class="col-md-6">
+        <div class="card p-4 h-100">
+            <h5 class="fw-bold mb-4" style="font-size:1.1rem; color:var(--treddy-text);">Usuarios por Rol</h5>
+            <div style="position: relative; height:250px; width:100%;">
+                <canvas id="adminRolesChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card p-4 h-100">
+            <h5 class="fw-bold mb-4" style="font-size:1.1rem; color:var(--treddy-text);">Estado de Productos</h5>
+            <div style="position: relative; height:250px; width:100%;">
+                <canvas id="adminEstadosChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- ── Accesos rápidos ────────────────────────────────────────── -->
 <h5 class="fw-semibold mb-3" style="color:var(--treddy-muted);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.08em;">
     Acciones Rápidas
 </h5>
 <div class="row g-3">
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card p-3 spa-link" style="cursor:pointer;" data-url="{% url 'productos_list' %}">
             <div class="d-flex align-items-center gap-3">
                 <div style="font-size:2rem;">📦</div>
                 <div>
-                    <div class="fw-bold">Gestionar Productos</div>
-                    <div style="color:var(--treddy-muted);font-size:0.82rem;">Crear, editar y eliminar inventario</div>
+                    <div class="fw-bold">Productos</div>
+                    <div style="color:var(--treddy-muted);font-size:0.82rem;">Gestionar inventario</div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card p-3 spa-link" style="cursor:pointer;" data-url="{% url 'registro' %}">
             <div class="d-flex align-items-center gap-3">
                 <div style="font-size:2rem;">👤</div>
                 <div>
-                    <div class="fw-bold">Registrar Usuario</div>
-                    <div style="color:var(--treddy-muted);font-size:0.82rem;">Añadir Vendedor o Cliente</div>
+                    <div class="fw-bold">Usuarios</div>
+                    <div style="color:var(--treddy-muted);font-size:0.82rem;">Registrar nuevo</div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card p-3">
+    <!-- Nuevos accesos rápidos para las nuevas vistas Premium -->
+    <div class="col-md-3">
+        <div class="card p-3 spa-link" style="cursor:pointer;" data-url="{% url 'usuario_list' %}">
             <div class="d-flex align-items-center gap-3">
-                <div style="font-size:2rem;">🔒</div>
+                <div style="font-size:2rem;">👥</div>
                 <div>
-                    <div class="fw-bold">Seguridad Activa</div>
-                    <div style="color:var(--treddy-muted);font-size:0.82rem;">4 capas de seguridad habilitadas</div>
+                    <div class="fw-bold">Gestión</div>
+                    <div style="color:var(--treddy-muted);font-size:0.82rem;">Directorio de usuarios</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3 spa-link" style="cursor:pointer;" data-url="{% url 'historial_list' %}">
+            <div class="d-flex align-items-center gap-3">
+                <div style="font-size:2rem;">⏱️</div>
+                <div>
+                    <div class="fw-bold">Auditoría</div>
+                    <div style="color:var(--treddy-muted);font-size:0.82rem;">Ver historial de acciones</div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<script>if (typeof bindSPALinks === 'function') bindSPALinks();</script>
+
+<script>
+(function() {
+    if (typeof bindSPALinks === 'function') bindSPALinks();
+
+    // Función para renderizar los gráficos de forma segura en SPA
+    function initCharts() {
+        const rolesCanvas = document.getElementById('adminRolesChart');
+        const estadosCanvas = document.getElementById('adminEstadosChart');
+        if (!rolesCanvas || !estadosCanvas) return;
+
+        // Limpiar gráficos anteriores si existen (SPA memory leak prevention)
+        if (window.adminRolesChartObj) window.adminRolesChartObj.destroy();
+        if (window.adminEstadosChartObj) window.adminEstadosChartObj.destroy();
+
+        // Datos desde Django
+        const rolesLabels = JSON.parse('{{ chart_roles_labels|escapejs }}');
+        const rolesData = JSON.parse('{{ chart_roles_data|escapejs }}');
+        
+        const estadosLabels = JSON.parse('{{ chart_estados_labels|escapejs }}');
+        const estadosData = JSON.parse('{{ chart_estados_data|escapejs }}');
+
+        // Colores Treddy
+        const colors = ['#00E6F6', '#3B82F6', '#6366F1', '#8B5CF6'];
+
+        window.adminRolesChartObj = new Chart(rolesCanvas, {
+            type: 'doughnut',
+            data: {
+                labels: rolesLabels,
+                datasets: [{
+                    data: rolesData,
+                    backgroundColor: colors,
+                    borderColor: '#0F173A',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right', labels: { color: '#E2E8F0' } }
+                }
+            }
+        });
+
+        window.adminEstadosChartObj = new Chart(estadosCanvas, {
+            type: 'bar',
+            data: {
+                labels: estadosLabels,
+                datasets: [{
+                    label: 'Productos',
+                    data: estadosData,
+                    backgroundColor: ['#00E6F6', '#6366F1'],
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8' } },
+                    x: { grid: { display: false }, ticks: { color: '#94A3B8' } }
+                }
+            }
+        });
+    }
+
+    // Inicializar (el script es reejecutado por base.html en cada carga SPA)
+    if (typeof Chart !== 'undefined') {
+        initCharts();
+    } else {
+        // En caso de que el CDN demore
+        setTimeout(initCharts, 500);
+    }
+})();
+</script>

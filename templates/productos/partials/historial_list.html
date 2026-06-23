@@ -1,0 +1,50 @@
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom py-3">
+        <h5 class="mb-0 fw-bold">⏱️ Historial de Auditoría</h5>
+        <p class="text-muted mb-0 small">Registro de movimientos y cambios en el inventario.</p>
+    </div>
+    <div class="card-body p-4">
+        {% if historial %}
+        <div class="timeline" style="position: relative; padding-left: 20px; border-left: 2px solid var(--treddy-border);">
+            {% for entry in historial %}
+            <div class="timeline-item mb-4" style="position: relative;">
+                <div class="timeline-dot" style="position: absolute; left: -26px; top: 0; width: 10px; height: 10px; background-color: {% if entry.accion == 'creacion' %}#22c55e{% elif entry.accion == 'actualizacion' %}#3b82f6{% else %}#ef4444{% endif %}; border-radius: 50%;"></div>
+                
+                <div class="d-flex justify-content-between">
+                    <div class="fw-bold text-dark">
+                        {{ entry.usuario.get_full_name|default:entry.usuario.email }}
+                        <span class="text-muted fw-normal">
+                            {% if entry.accion == 'creacion' %}
+                                creó el producto
+                            {% elif entry.accion == 'actualizacion' %}
+                                actualizó el producto
+                            {% else %}
+                                eliminó el producto
+                            {% endif %}
+                        </span>
+                        <span class="text-primary">{{ entry.nombre }}</span>
+                    </div>
+                    <div class="text-muted small">{{ entry.fecha|date:"d M Y, H:i" }}</div>
+                </div>
+                
+                {% if entry.accion != 'eliminacion' %}
+                <div class="mt-2 p-3 rounded" style="background: rgba(0,0,0,0.02); border: 1px solid var(--treddy-border);">
+                    <div class="row g-2 text-muted small">
+                        <div class="col-4"><strong>Precio:</strong> ${{ entry.precio_base|default:"0" }}</div>
+                        <div class="col-4"><strong>Stock:</strong> {{ entry.stock|default:"0" }}</div>
+                        <div class="col-4"><strong>Estado:</strong> {{ entry.estado|default:"N/A" }}</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <div style="font-size:3rem; opacity:0.5; margin-bottom:1rem;">📭</div>
+            <p>No hay registros en el historial de auditoría.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+<script>if (typeof bindSPALinks === 'function') bindSPALinks();</script>

@@ -4,9 +4,14 @@
         <h2 class="fw-bold mb-0" style="color:var(--treddy-text);">Gestión de Productos</h2>
         <p class="mb-0" style="color:var(--treddy-muted);font-size:0.85rem;">Inventario actualizado del sistema</p>
     </div>
-    <button class="btn btn-primary px-4 spa-link" data-url="{% url 'producto_create' %}">
-        + Nuevo Producto
-    </button>
+    <div class="d-flex gap-2">
+        <a href="{% url 'exportar_csv' %}" class="btn btn-outline-success px-3" download>
+            📄 Exportar CSV
+        </a>
+        <button class="btn btn-primary px-4 spa-link" data-url="{% url 'producto_create' %}">
+            + Nuevo Producto
+        </button>
+    </div>
 </div>
 
 <!-- ── Barra de Búsqueda y Filtros ──────────────────────────────── -->
