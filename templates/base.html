@@ -88,6 +88,15 @@
     </main>
 </div>
 
+<!-- Contenedor oculto para mensajes de Django (Evita mezclar sintaxis Django/JS en el script y elimina advertencias del linter) -->
+<div id="django-messages" style="display: none;">
+    {% if messages %}
+        {% for message in messages %}
+            <span class="django-message" data-tags="{{ message.tags }}">{{ message|escapejs }}</span>
+        {% endfor %}
+    {% endif %}
+</div>
+
 <!-- Bootstrap JS local -->
 <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 <!-- Local scripts -->
@@ -111,15 +120,23 @@ const Toast = Swal.mixin({
     }
 });
 
-// Capturar mensajes de Django y mostrarlos como Toasts
-{% if messages %}
-    {% for message in messages %}
+// Capturar mensajes del DOM y mostrarlos como Toasts
+document.addEventListener('DOMContentLoaded', () => {
+    const messages = document.querySelectorAll('#django-messages .django-message');
+    messages.forEach(msg => {
+        const tags = msg.getAttribute('data-tags');
+        const text = msg.textContent;
+        let icon = 'success';
+        if (tags === 'error') icon = 'error';
+        else if (tags === 'warning') icon = 'warning';
+        else if (tags === 'info') icon = 'info';
+        
         Toast.fire({
-            icon: '{% if message.tags == "error" %}error{% elif message.tags == "warning" %}warning{% elif message.tags == "info" %}info{% else %}success{% endif %}',
-            title: '{{ message|escapejs }}'
+            icon: icon,
+            title: text
         });
-    {% endfor %}
-{% endif %}
+    });
+});
 </script>
 
 <!-- ════ Partículas (AnimatedBackground) ════ -->
