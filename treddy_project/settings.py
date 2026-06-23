@@ -140,12 +140,19 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
-
+# ─────────────────────────────────────────────────────────────────────────────
+# Archivos estáticos — Todos los recursos frontend están servidos LOCALMENTE.
+# NO se utilizan CDNs externos en este proyecto.
+# Librerías incluidas en static/:
+#   • Bootstrap 5.3       → static/css/bootstrap.min.css
+#                           static/js/bootstrap.bundle.min.js
+#   • SweetAlert2         → static/js/vendor/sweetalert2.all.min.js
+#   • NProgress           → static/js/vendor/nprogress.min.js
+#                           static/css/nprogress.css
+# ─────────────────────────────────────────────────────────────────────────────
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',
+    BASE_DIR / 'static',  # Directorio raíz de todos los estáticos locales
 ]
 
 # Custom User Model

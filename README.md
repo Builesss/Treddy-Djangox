@@ -118,12 +118,115 @@ python manage.py runserver
 
 ---
 
+## 🎨 Recursos Frontend — 100% Locales (Sin CDNs)
+
+Todos los archivos de estilos y librerías JavaScript están almacenados y servidos **localmente** desde la carpeta `static/`. Esto está configurado en `treddy_project/settings.py` con la variable `STATICFILES_DIRS`.
+
+| Librería | Versión | Ruta Local | Propósito |
+|----------|---------|------------|-----------|
+| **Bootstrap** | 5.3 | `static/css/bootstrap.min.css` | Sistema de grillas y componentes UI |
+| **Bootstrap JS** | 5.3 | `static/js/bootstrap.bundle.min.js` | Componentes JS (modales, collapse) |
+| **SweetAlert2** | 11.x | `static/js/vendor/sweetalert2.all.min.js` | Alertas y confirmaciones interactivas |
+| **NProgress** | 0.2.0 | `static/js/vendor/nprogress.min.js` | Barra de progreso de carga SPA |
+| **NProgress CSS** | 0.2.0 | `static/css/nprogress.css` | Estilos de la barra NProgress |
+
+> ✅ **Sin CDN:** No existe ninguna referencia a `cdn.jsdelivr.net`, `cdnjs.cloudflare.com` ni servicios externos de recursos estáticos en ninguna plantilla del proyecto.
+
+---
+
+## 🔒 4 Capas de Seguridad Implementadas
+
+El sistema aplica un modelo de defensa en profundidad con **4 capas independientes** de validación y protección:
+
+### Capa 1 — Validación en el Cliente (HTML5 / Frontend)
+Ubicación: atributos `pattern`, `required` y `type` en los formularios HTML.
+
+```html
+<!-- Ejemplo en templates/usuarios/login.html -->
+<input type="email"
+       pattern="^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$"
+       required>
+```
+
+- Valida el formato del correo electrónico con Regex HTML5
+- Exige contraseña con mínimo 8 caracteres, mayúscula y número
+- Nombres solo con letras (sin caracteres especiales ni SQL)
+- Teléfono con formato numérico válido
+
+### Capa 2 — Validación en el Servidor (Python / Forms)
+Ubicación: `usuarios/forms.py` — métodos `clean_*()` con el módulo `re`.
+
+```python
+# usuarios/forms.py
+import re
+
+def clean_username(self):
+    username = self.cleaned_data.get('username', '')
+    if not re.match(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$', username):
+        raise ValidationError("El correo contiene caracteres no permitidos.")
+    return username
+```
+
+- Re-valida todos los campos con las mismas expresiones regulares
+- Impide que un atacante bypass la validación manipulando el HTML
+- Verifica unicidad del email antes de registrar
+
+### Capa 3 — Validación en el Modelo (Base de Datos / ORM)
+Ubicación: `usuarios/models.py` y `productos/models.py`.
+
+```python
+# usuarios/models.py
+class Usuario(AbstractUser):
+    email = models.EmailField(unique=True)        # Unicidad garantizada en BD
+    tipo_usuario = models.CharField(...)          # Campo con choices restringidos
+    estado = models.CharField(...)
+```
+
+- Campos con restricciones `unique`, `not null` a nivel de base de datos
+- El modelo `Usuario` extiende `AbstractUser` de Django con contraseñas hasheadas (bcrypt)
+- `@login_required` en todas las vistas protegidas
+- Control de acceso por rol: clientes no pueden acceder a rutas de admin/vendedor
+- Soft Delete en `Producto` (`is_deleted`) mantiene la integridad referencial
+
+### Capa 4 — Seguridad de Infraestructura (Middleware / Settings)
+Ubicación: `treddy_project/settings.py`.
+
+```python
+# Protección contra fuerza bruta — django-axes
+AXES_FAILURE_LIMIT = 5       # Bloquea IP tras 5 intentos fallidos
+AXES_COOLOFF_TIME = 1        # Tiempo de bloqueo: 1 hora
+AXES_LOCKOUT_TEMPLATE = 'usuarios/lockout.html'
+
+# Variables de entorno — django-environ
+SECRET_KEY = env('SECRET_KEY')   # Clave secreta fuera del código fuente
+DATABASES = {'default': env.db('DATABASE_URL')}  # Credenciales en .env
+
+# Cabeceras de seguridad HTTP (en producción)
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+```
+
+- **`django-axes`**: bloqueo automático de IPs con intentos de fuerza bruta
+- **`django-environ`**: variables sensibles en `.env` (excluido del repositorio con `.gitignore`)
+- **`CsrfViewMiddleware`**: protección contra ataques CSRF en todos los formularios POST
+- **`SecurityMiddleware`**: cabeceras HTTP de seguridad activadas
+- **`AUTH_PASSWORD_VALIDATORS`**: validadores de contraseña del framework Django
+
+---
+
 ## 📐 Patrones de Diseño Aplicados
 
-- **Strategy Pattern** — Delegación de dashboard según el rol del usuario
-- **Observer Pattern** — Registro automático de auditoría en `HistorialProducto`
-- **SPA (Single Page Application)** — Navegación sin recargas via AJAX + partials
-- **MVT (Model-View-Template)** — Arquitectura base de Django
+| Patrón | Descripción | Archivo |
+|--------|-------------|---------|
+| **Strategy** | El `dashboard_view` selecciona plantilla y contexto según el rol del usuario | `usuarios/views.py` |
+| **Observer** | `HistorialProducto` registra automáticamente cada cambio en productos | `productos/models.py` |
+| **SPA (Arquitectural)** | Navegación sin recarga vía `fetch()` + partials HTML inyectados en `#spa-container` | `templates/base.html` |
+| **Service Layer** | La lógica de checkout está separada en `services.py` fuera de las vistas | `productos/services.py` |
+| **Soft Delete** | Los productos eliminados se marcan con `is_deleted=True` para preservar integridad | `productos/models.py` |
+| **DRY (Herencia de Forms)** | `AdminRegistroForm` hereda de `CustomRegistroForm` sin repetir código | `usuarios/forms.py` |
 
 ---
 
@@ -131,8 +234,28 @@ python manage.py runserver
 
 Las bitácoras semanales del proyecto se encuentran en el directorio `bitacoras/`.
 
+| Fecha | Contenido |
+|-------|-----------|
+| 05-05-2026 | Configuración inicial, CustomUser, Bootstrap local, MVT |
+| 12-05-2026 | CRUD de productos, formularios, plantillas SPA |
+| 19-05-2026 | Módulo e-commerce: carrito, favoritos, pedidos |
+| 26-05-2026 | Dashboard vendedor, gráficos, exportar CSV |
+| 02-06-2026 | HistorialProducto (Observer), UML, README, pruebas de integración |
+
 ---
 
-## 📊 Diagramas UML
+## 📊 Diagramas UML (PlantUML)
 
-Los diagramas del sistema (arquitectura, casos de uso, clases, modelo de datos) se encuentran en `docs/uml/` en formato PlantUML (`.puml`).
+Los diagramas del sistema se encuentran en `docs/uml/` en formato PlantUML (`.puml`).
+
+| Archivo | Tipo |
+|---------|------|
+| `arquitectura_mvt.puml` | Diagrama de componentes (MVT + SPA + Supabase) |
+| `casos_de_uso.puml` | Casos de uso por rol |
+| `diagrama_clases.puml` | Clases del sistema |
+| `modelo_de_datos.puml` | Entidad-Relación (tablas PostgreSQL) |
+| `patrones_diseno.puml` | Patrones de diseño aplicados |
+| `estados_producto.puml` | Ciclo de vida del producto |
+| `secuencia_checkout.puml` | Secuencia del proceso de compra |
+| `secuencia_login.puml` | Secuencia del proceso de autenticación |
+
