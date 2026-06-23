@@ -134,3 +134,104 @@ def exportar_csv(request):
         ])
         
     return response
+
+
+# ──────────────────────────────────────────────────────────────
+# Favoritos y Carrito (Cliente)
+# ──────────────────────────────────────────────────────────────
+from django.http import JsonResponse
+from .models import Favorito, Pedido, DetallePedido
+
+@login_required
+def toggle_favorito(request, pk):
+    if request.method == 'POST':
+        producto = get_object_or_404(Producto, pk=pk)
+        fav, created = Favorito.objects.get_or_create(usuario=request.user, producto=producto)
+        if not created:
+            fav.delete()
+            return JsonResponse({'status': 'removed'})
+        return JsonResponse({'status': 'added'})
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+@login_required
+def favoritos_list(request):
+    favoritos = Favorito.objects.filter(usuario=request.user).select_related('producto')
+    productos = [fav.producto for fav in favoritos]
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render(request, 'productos/partials/favoritos_list.html', {'productos': productos})
+    return render(request, 'productos/favoritos_list.html', {'productos': productos})
+
+@login_required
+def add_to_cart(request, pk):
+    if request.method == 'POST':
+        # Simulación de carrito en sesión
+        cart = request.session.get('cart', {})
+        pk_str = str(pk)
+        if pk_str in cart:
+            cart[pk_str] += 1
+        else:
+            cart[pk_str] = 1
+        request.session['cart'] = cart
+        return JsonResponse({'status': 'success', 'cart_count': sum(cart.values())})
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+@login_required
+def view_cart(request):
+    cart = request.session.get('cart', {})
+    cart_items = []
+    total = 0
+    for pk, qty in cart.items():
+        producto = Producto.objects.filter(pk=pk).first()
+        if producto:
+            subtotal = float(producto.precio_base) * qty
+            total += subtotal
+            cart_items.append({
+                'producto': producto,
+                'cantidad': qty,
+                'subtotal': subtotal
+            })
+            
+    context = {'cart_items': cart_items, 'total': total}
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render(request, 'productos/partials/cart.html', context)
+    return render(request, 'productos/cart.html', context)
+
+@login_required
+def checkout(request):
+    if request.method == 'POST':
+        cart = request.session.get('cart', {})
+        if not cart:
+            messages.error(request, "Tu carrito está vacío.")
+            return redirect('view_cart')
+            
+        pedido = Pedido.objects.create(usuario=request.user, total=0)
+        total = 0
+        for pk, qty in cart.items():
+            producto = Producto.objects.filter(pk=pk).first()
+            if producto:
+                precio = producto.precio_base
+                subtotal = precio * qty
+                total += subtotal
+                DetallePedido.objects.create(
+                    pedido=pedido,
+                    producto=producto,
+                    nombre_producto=producto.nombre,
+                    cantidad=qty,
+                    precio_unitario=precio
+                )
+                
+        pedido.total = total
+        pedido.save()
+        request.session['cart'] = {}
+        messages.success(request, f"Pedido #{pedido.id} realizado con éxito.")
+        return redirect('pedidos_list')
+    return redirect('view_cart')
+
+@login_required
+def pedidos_list(request):
+    pedidos = Pedido.objects.filter(usuario=request.user).order_by('-created_at')
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render(request, 'productos/partials/pedidos_list.html', {'pedidos': pedidos})
+    return render(request, 'productos/pedidos_list.html', {'pedidos': pedidos})
+

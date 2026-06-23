@@ -1,0 +1,80 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0" style="color:var(--treddy-cyan);">🛍️ Mis Pedidos</h2>
+</div>
+
+<div class="card p-0">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle text-white" style="color:var(--treddy-text) !important;">
+            <thead style="background:var(--treddy-panel); color:var(--treddy-muted);">
+                <tr>
+                    <th class="ps-4">Pedido #</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Total</th>
+                    <th class="pe-4">Detalles</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pedido in pedidos %}
+                <tr>
+                    <td class="ps-4 fw-bold">#{{ pedido.id }}</td>
+                    <td>{{ pedido.created_at|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        {% if pedido.estado == 'pendiente' %}
+                            <span class="badge" style="background:rgba(234,179,8,0.2); color:#fde047; border:1px solid rgba(234,179,8,0.3);">Pendiente</span>
+                        {% elif pedido.estado == 'enviado' %}
+                            <span class="badge" style="background:rgba(59,130,246,0.2); color:#93c5fd; border:1px solid rgba(59,130,246,0.3);">Enviado</span>
+                        {% elif pedido.estado == 'entregado' %}
+                            <span class="badge" style="background:rgba(34,197,94,0.2); color:#86efac; border:1px solid rgba(34,197,94,0.3);">Entregado</span>
+                        {% elif pedido.estado == 'cancelado' %}
+                            <span class="badge" style="background:rgba(239,68,68,0.2); color:#fca5a5; border:1px solid rgba(239,68,68,0.3);">Cancelado</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-success fw-bold">${{ pedido.total }}</td>
+                    <td class="pe-4">
+                        <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="collapse" data-bs-target="#detalle-{{ pedido.id }}" aria-expanded="false">
+                            Ver Artículos
+                        </button>
+                    </td>
+                </tr>
+                <tr class="collapse" id="detalle-{{ pedido.id }}" style="background:var(--treddy-panel);">
+                    <td colspan="5" class="p-4 border-0">
+                        <h6 class="fw-bold mb-3" style="color:var(--treddy-cyan);">Artículos del Pedido</h6>
+                        <div class="row g-3">
+                            {% for detalle in pedido.detalles.all %}
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center gap-3 p-2 rounded" style="background:var(--treddy-bg); border:1px solid var(--treddy-border);">
+                                    <div style="width: 40px; height: 40px; background:var(--treddy-panel); border-radius: 6px; overflow: hidden; flex-shrink: 0;">
+                                        {% if detalle.producto and detalle.producto.imagen %}
+                                            <img src="{{ detalle.producto.imagen.url }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        {% else %}
+                                            <div class="d-flex align-items-center justify-content-center h-100 text-muted" style="font-size: 1.2rem;">📦</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold text-truncate" style="max-width:200px;" title="{{ detalle.nombre_producto }}">{{ detalle.nombre_producto }}</div>
+                                        <div class="small" style="color:var(--treddy-muted);">Cant: {{ detalle.cantidad }} x ${{ detalle.precio_unitario }}</div>
+                                    </div>
+                                    <div class="fw-bold text-success pe-2">
+                                        ${% widthratio detalle.cantidad 1 detalle.precio_unitario %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-5">
+                        <h5 class="text-muted">Aún no has realizado ningún pedido.</h5>
+                        <button class="btn btn-outline-primary mt-3 spa-link" data-url="{% url 'dashboard' %}">Explorar catálogo</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>if (typeof bindSPALinks === 'function') bindSPALinks();</script>

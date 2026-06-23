@@ -94,6 +94,11 @@
                 <span class="badge bg-primary position-absolute" style="top: 10px; right: 10px; font-size: 0.7rem; backdrop-filter: blur(4px);">
                     {{ producto.categoria }}
                 </span>
+                
+                <!-- Botón Favorito -->
+                <button class="btn btn-sm btn-light position-absolute btn-fav" data-pk="{{ producto.pk }}" style="top: 10px; left: 10px; border-radius: 50%; width: 32px; height: 32px; padding: 0; display:flex; align-items:center; justify-content:center; opacity:0.8; transition: opacity 0.2s;">
+                    ❤️
+                </button>
             </div>
             
             <!-- Detalles del Producto -->
@@ -104,7 +109,7 @@
                 </div>
                 
                 <div class="mt-auto pt-3">
-                    <button class="btn btn-outline-primary w-100 btn-sm" onclick="Toast.fire({icon:'success', title:'Agregado al carrito (Simulación)'})">
+                    <button class="btn btn-outline-primary w-100 btn-sm btn-add-cart" data-pk="{{ producto.pk }}">
                         🛒 Añadir al carrito
                     </button>
                 </div>
@@ -118,4 +123,59 @@
     {% endfor %}
 </div>
 
-<script>if (typeof bindSPALinks === 'function') bindSPALinks();</script>
+<input type="hidden" id="csrfTokenCliente" value="{{ csrf_token }}">
+<script>
+if (typeof bindSPALinks === 'function') bindSPALinks();
+
+(function() {
+    const csrf = document.getElementById('csrfTokenCliente').value;
+    
+    // Add to cart
+    document.querySelectorAll('.btn-add-cart').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const pk = this.dataset.pk;
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', csrf);
+            
+            fetch('/carrito/add/' + pk + '/', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    Toast.fire({icon:'success', title:'Producto añadido al carrito (' + data.cart_count + ' items)'});
+                }
+            });
+        });
+    });
+
+    // Toggle Favorito
+    document.querySelectorAll('.btn-fav').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const pk = this.dataset.pk;
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', csrf);
+            
+            fetch('/favorito/toggle/' + pk + '/', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'added') {
+                    this.style.opacity = '1';
+                    Toast.fire({icon:'success', title:'Agregado a favoritos'});
+                } else if (data.status === 'removed') {
+                    this.style.opacity = '0.5';
+                    Toast.fire({icon:'info', title:'Eliminado de favoritos'});
+                }
+            });
+        });
+    });
+})();
+</script>

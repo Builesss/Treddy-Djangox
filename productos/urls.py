@@ -8,4 +8,12 @@ urlpatterns = [
     path('eliminar/<int:pk>/', views.producto_delete, name='producto_delete'),
     path('historial/', views.historial_list, name='historial_list'),
     path('exportar/', views.exportar_csv, name='exportar_csv'),
+    
+    # Cliente / E-commerce
+    path('favorito/toggle/<int:pk>/', views.toggle_favorito, name='toggle_favorito'),
+    path('favoritos/', views.favoritos_list, name='favoritos_list'),
+    path('carrito/add/<int:pk>/', views.add_to_cart, name='add_to_cart'),
+    path('carrito/', views.view_cart, name='view_cart'),
+    path('checkout/', views.checkout, name='checkout'),
+    path('pedidos/', views.pedidos_list, name='pedidos_list'),
 ]
