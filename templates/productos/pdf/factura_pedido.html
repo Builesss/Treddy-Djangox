@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Factura de Pedido</title>
+    <style>
+        body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 14px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { color: #0F173A; margin: 0; }
+        .header p { color: #555; }
+        .invoice-details { margin-bottom: 30px; border-bottom: 2px solid #00E6F6; padding-bottom: 10px; }
+        .invoice-details table { width: 100%; }
+        .invoice-details th { text-align: left; width: 25%; }
+        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        .items-table th { background-color: #0F173A; color: white; padding: 10px; text-align: left; }
+        .items-table td { border-bottom: 1px solid #ddd; padding: 8px; }
+        .total-row td { font-weight: bold; border-top: 2px solid #0F173A; }
+        .footer { text-align: center; color: #777; font-size: 12px; margin-top: 50px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Treddy</h1>
+        <p>Factura de Compra</p>
+    </div>
+
+    <div class="invoice-details">
+        <table>
+            <tr>
+                <th>Número de Pedido:</th>
+                <td>#{{ pedido.id }}</td>
+                <th>Fecha:</th>
+                <td>{{ pedido.created_at|date:"d M Y" }}</td>
+            </tr>
+            <tr>
+                <th>Cliente:</th>
+                <td>{{ usuario.get_full_name|default:usuario.email }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unit.</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in detalles %}
+            <tr>
+                <td>{{ item.nombre_producto }}</td>
+                <td>{{ item.cantidad }}</td>
+                <td>${{ item.precio_unitario }}</td>
+                <td>${{ item.subtotal }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="total-row">
+                <td colspan="3" style="text-align: right;">Total a Pagar:</td>
+                <td>${{ pedido.total }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>¡Gracias por tu compra en Treddy!</p>
+    </div>
+</body>
+</html>

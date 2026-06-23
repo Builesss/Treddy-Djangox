@@ -2,6 +2,10 @@ from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MinLengthValidator, RegexValidator
 
+class ActiveProductoManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
+
 class Producto(models.Model):
     ESTADOS = (
         ('activo', 'Activo'),
@@ -17,6 +21,15 @@ class Producto(models.Model):
     imagen = models.ImageField(upload_to='productos/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_deleted = models.BooleanField(default=False)
+
+    objects = ActiveProductoManager()
+    all_objects = models.Manager()
+
+    def delete(self, *args, **kwargs):
+        """Soft delete: marcalo como eliminado en lugar de borrarlo físicamente."""
+        self.is_deleted = True
+        self.save()
 
     def __str__(self):
         return self.nombre

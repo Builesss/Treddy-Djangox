@@ -5,16 +5,28 @@ from django.http import HttpResponse
 from .models import Producto, HistorialProducto
 from .forms import ProductoForm
 
+from django.core.paginator import Paginator
+
 @login_required
 def producto_list(request):
-    productos = Producto.objects.all().order_by('-created_at')
+    query = request.GET.get('q', '')
+    if query:
+        productos = Producto.objects.filter(nombre__icontains=query).order_by('-created_at')
+    else:
+        productos = Producto.objects.all().order_by('-created_at')
+    
+    paginator = Paginator(productos, 12) # 12 productos por página
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {'productos': page_obj} # Usar page_obj en lugar de productos completos
     
     # Comportamiento SPA: si es una petición fetch (AJAX), renderizamos solo el fragmento
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return render(request, 'productos/partials/producto_list.html', {'productos': productos})
+        return render(request, 'productos/partials/producto_list.html', context)
     
     # Si es acceso directo
-    return render(request, 'productos/producto_list.html', {'productos': productos})
+    return render(request, 'productos/producto_list.html', context)
 
 @login_required
 def producto_create(request):
@@ -209,6 +221,8 @@ def view_cart(request):
         return render(request, 'productos/partials/cart.html', context)
     return render(request, 'productos/cart.html', context)
 
+from .services import procesar_checkout
+
 @login_required
 def checkout(request):
     if request.method == 'POST':
@@ -217,27 +231,15 @@ def checkout(request):
             messages.error(request, "Tu carrito está vacío.")
             return redirect('view_cart')
             
-        pedido = Pedido.objects.create(usuario=request.user, total=0)
-        total = 0
-        for pk, qty in cart.items():
-            producto = Producto.objects.filter(pk=pk).first()
-            if producto:
-                precio = producto.precio_base
-                subtotal = precio * qty
-                total += subtotal
-                DetallePedido.objects.create(
-                    pedido=pedido,
-                    producto=producto,
-                    nombre_producto=producto.nombre,
-                    cantidad=qty,
-                    precio_unitario=precio
-                )
-                
-        pedido.total = total
-        pedido.save()
-        request.session['cart'] = {}
-        messages.success(request, f"Pedido #{pedido.id} realizado con éxito.")
-        return redirect('pedidos_list')
+        pedido = procesar_checkout(request.user, cart)
+        if pedido:
+            request.session['cart'] = {}
+            messages.success(request, f"Pedido #{pedido.id} realizado con éxito.")
+            return redirect('pedidos_list')
+        else:
+            messages.error(request, "Error procesando el pedido.")
+            return redirect('view_cart')
+            
     return redirect('view_cart')
 
 @login_required
@@ -245,5 +247,22 @@ def pedidos_list(request):
     pedidos = Pedido.objects.filter(usuario=request.user).order_by('-created_at')
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return render(request, 'productos/partials/pedidos_list.html', {'pedidos': pedidos})
-    return render(request, 'productos/pedidos_list.html', {'pedidos': pedidos})
+from .utils import render_to_pdf
 
+@login_required
+def download_pedido_pdf(request, pedido_id):
+    pedido = get_object_or_404(Pedido, id=pedido_id, usuario=request.user)
+    detalles = pedido.detalles.all()
+    
+    context = {
+        'pedido': pedido,
+        'detalles': detalles,
+        'usuario': request.user,
+    }
+    
+    pdf = render_to_pdf('productos/pdf/factura_pedido.html', context)
+    if pdf:
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="factura_pedido_{pedido.id}.pdf"'
+        return response
+    return HttpResponse("Error generando el PDF", status=400)

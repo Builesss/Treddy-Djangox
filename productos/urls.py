@@ -16,5 +16,6 @@ urlpatterns = [
     path('carrito/add/<int:pk>/', views.add_to_cart, name='add_to_cart'),
     path('carrito/', views.view_cart, name='view_cart'),
     path('checkout/', views.checkout, name='checkout'),
-    path('pedidos/', views.pedidos_list, name='pedidos_list'),
+    path('mis-pedidos/', views.pedidos_list, name='pedidos_list'),
+    path('pedidos/<int:pedido_id>/pdf/', views.download_pedido_pdf, name='download_pedido_pdf'),
 ]

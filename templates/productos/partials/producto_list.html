@@ -140,6 +140,45 @@
     {% endfor %}
 </div>
 
+<!-- ── Paginación ──────────────────────────────────────────────── -->
+{% if productos.has_other_pages %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if productos.has_previous %}
+        <li class="page-item">
+            <a class="page-link spa-link" href="#" data-url="{% url 'productos_list' %}?page={{ productos.previous_page_number }}" style="background:var(--treddy-panel); color:var(--treddy-text); border-color:var(--treddy-border);">Anterior</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link" style="background:var(--treddy-panel); color:var(--treddy-muted); border-color:var(--treddy-border);">Anterior</span>
+        </li>
+        {% endif %}
+
+        {% for num in productos.paginator.page_range %}
+            {% if productos.number == num %}
+            <li class="page-item active" aria-current="page">
+                <span class="page-link" style="background:var(--treddy-cyan); color:#000; border-color:var(--treddy-cyan);">{{ num }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link spa-link" href="#" data-url="{% url 'productos_list' %}?page={{ num }}" style="background:var(--treddy-panel); color:var(--treddy-text); border-color:var(--treddy-border);">{{ num }}</a>
+            </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if productos.has_next %}
+        <li class="page-item">
+            <a class="page-link spa-link" href="#" data-url="{% url 'productos_list' %}?page={{ productos.next_page_number }}" style="background:var(--treddy-panel); color:var(--treddy-text); border-color:var(--treddy-border);">Siguiente</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link" style="background:var(--treddy-panel); color:var(--treddy-muted); border-color:var(--treddy-border);">Siguiente</span>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
 <!-- Csrf token oculto para peticiones AJAX de borrado -->
 <input type="hidden" id="csrfToken" value="{{ csrf_token }}">
 

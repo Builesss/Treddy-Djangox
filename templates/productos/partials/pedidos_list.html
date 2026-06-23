@@ -37,9 +37,14 @@
                     </td>
                     <td class="text-success fw-bold">${{ pedido.total }}</td>
                     <td class="pe-4">
-                        <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="collapse" data-bs-target="#detalle-{{ pedido.id }}" aria-expanded="false">
-                            Ver Artículos
-                        </button>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="collapse" data-bs-target="#detalle-{{ pedido.id }}" aria-expanded="false">
+                                Ver Artículos
+                            </button>
+                            <a href="{% url 'download_pedido_pdf' pedido.id %}" class="btn btn-sm btn-outline-success" target="_blank">
+                                📄 PDF
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 <tr class="collapse" id="detalle-{{ pedido.id }}" style="background:var(--treddy-panel);">
