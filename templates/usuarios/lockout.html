@@ -1,0 +1,19 @@
+{% extends 'base_auth.html' %}
+{% block title %}Cuenta Bloqueada{% endblock %}
+
+{% block content %}
+<div class="card p-5 mx-auto mt-5 text-center shadow" style="max-width: 500px;">
+    <div class="mb-4" style="font-size: 3rem;">🔒</div>
+    <h3 class="fw-bold mb-3">Acceso Bloqueado</h3>
+    <p class="text-muted mb-4">
+        Hemos detectado múltiples intentos fallidos de inicio de sesión desde tu dirección IP. 
+        Por tu seguridad, hemos bloqueado temporalmente el acceso.
+    </p>
+    <div class="alert alert-warning mb-4">
+        Por favor, espera unos minutos antes de intentar nuevamente o contacta a soporte.
+    </div>
+    <a href="{% url 'login' %}" class="btn btn-primary w-100 py-2 fw-semibold">
+        Volver al Inicio
+    </a>
+</div>
+{% endblock %}

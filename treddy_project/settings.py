@@ -12,20 +12,29 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 
+import environ
+
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, False)
+)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Take environment variables from .env file
+environ.Env.read_env(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5%ggzdybd$*5r@mfiba%_=x@uox#-y%5q^yvxc1f!v2x%f)4uc'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']  # Actualizar para producción
 
 
 # Application definition
@@ -40,6 +49,7 @@ INSTALLED_APPS = [
     'usuarios',
     'productos',
     'widget_tweaks',
+    'axes',
 ]
 
 MIDDLEWARE = [
@@ -50,6 +60,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'axes.middleware.AxesMiddleware',
 ]
 
 ROOT_URLCONF = 'treddy_project.urls'
@@ -75,15 +86,27 @@ WSGI_APPLICATION = 'treddy_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-import dj_database_url
-
 DATABASES = {
-    'default': dj_database_url.config(
-        default='postgresql://postgres:Cr9564821313@db.hyroajusvitpmlhivzmc.supabase.co:5432/postgres',
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
+    'default': env.db('DATABASE_URL')
 }
+
+# Configuración de Seguridad (Recomendado para Producción)
+if not DEBUG:
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
+    X_FRAME_OPTIONS = 'DENY'
+
+# Configuración de Django-Axes (Protección contra fuerza bruta)
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesBackend', # Axes must be first
+    'django.contrib.auth.backends.ModelBackend',
+]
+AXES_FAILURE_LIMIT = 5 # Bloquear después de 5 intentos fallidos
+AXES_COOLOFF_TIME = 1 # Tiempo de enfriamiento en horas
+AXES_LOCKOUT_TEMPLATE = 'usuarios/lockout.html' # Template a mostrar al bloquear
 
 
 # Password validation
